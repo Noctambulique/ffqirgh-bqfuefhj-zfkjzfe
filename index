@@ -27,7 +27,7 @@
       width: 100px;
       height: 100px;
       background-color: #eee;
-      background-image: url('https://imgur.com/a/hNdpm5e');
+      background-image: url('https://i.imgur.com/v1iMYsD.png');
       background-size: 300px 300px;
       cursor: pointer;
       border: 1px solid #ccc;
@@ -43,7 +43,6 @@
       display: block;
     }
 
-    /* Chaque pièce de puzzle visible au clic */
     input#p1:checked ~ .puzzle label[for="p1"] .piece { opacity: 1; background-position: 0px 0px; }
     input#p2:checked ~ .puzzle label[for="p2"] .piece { opacity: 1; background-position: -100px 0px; }
     input#p3:checked ~ .puzzle label[for="p3"] .piece { opacity: 1; background-position: -200px 0px; }
@@ -58,7 +57,6 @@
 <body>
   <h1>Assemble le puzzle pour découvrir la surprise 💞</h1>
 
-  <!-- Cases invisibles qui gèrent les clics -->
   <input type="checkbox" id="p1">
   <input type="checkbox" id="p2">
   <input type="checkbox" id="p3">
@@ -69,7 +67,6 @@
   <input type="checkbox" id="p8">
   <input type="checkbox" id="p9">
 
-  <!-- Grille de puzzle -->
   <div class="puzzle">
     <label for="p1"><div class="piece"></div></label>
     <label for="p2"><div class="piece"></div></label>

@@ -1,83 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Puzzle pour toi</title>
+  <title>Feuilles d’automne</title>
   <style>
     body {
-      background: #fff9f4;
-      font-family: sans-serif;
+      background: linear-gradient(#fff5e1, #f8e5d2);
+      font-family: 'Georgia', serif;
       text-align: center;
-      padding: 40px;
+      padding: 40px 20px;
     }
 
     h1 {
-      color: #d37d7d;
+      color: #aa5a2e;
+      margin-bottom: 40px;
     }
 
-    .puzzle {
-      display: grid;
-      grid-template-columns: repeat(3, 100px);
-      grid-gap: 5px;
-      justify-content: center;
-      margin-top: 30px;
-    }
-
-    .piece {
-      width: 100px;
-      height: 100px;
-      background-color: #eee;
-      background-image: url('https://i.postimg.cc/FK7r5VRR/IMG-20211031-174937.jpg');
-      background-size: 300px 300px;
-      background-position: center;
+    .feuille {
+      font-size: 40px;
+      margin: 15px;
       cursor: pointer;
-      border: 1px solid #ccc;
-      transition: opacity 0.5s;
-      opacity: 0;
+      transition: transform 0.3s;
+      display: inline-block;
+    }
+
+    .feuille:hover {
+      transform: scale(1.3) rotate(-10deg);
     }
 
     input[type="checkbox"] {
       display: none;
     }
 
-    label {
-      display: block;
+    .message {
+      display: none;
+      font-size: 18px;
+      color: #6d3c1d;
+      margin: 10px 0 25px;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+      background: #fff4ea;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
 
-    input#p1:checked ~ .puzzle label[for="p1"] .piece { opacity: 1; background-position: 0px 0px; }
-    input#p2:checked ~ .puzzle label[for="p2"] .piece { opacity: 1; background-position: -100px 0px; }
-    input#p3:checked ~ .puzzle label[for="p3"] .piece { opacity: 1; background-position: -200px 0px; }
-    input#p4:checked ~ .puzzle label[for="p4"] .piece { opacity: 1; background-position: 0px -100px; }
-    input#p5:checked ~ .puzzle label[for="p5"] .piece { opacity: 1; background-position: -100px -100px; }
-    input#p6:checked ~ .puzzle label[for="p6"] .piece { opacity: 1; background-position: -200px -100px; }
-    input#p7:checked ~ .puzzle label[for="p7"] .piece { opacity: 1; background-position: 0px -200px; }
-    input#p8:checked ~ .puzzle label[for="p8"] .piece { opacity: 1; background-position: -100px -200px; }
-    input#p9:checked ~ .puzzle label[for="p9"] .piece { opacity: 1; background-position: -200px -200px; }
+    #f1:checked ~ #m1,
+    #f2:checked ~ #m2,
+    #f3:checked ~ #m3,
+    #f4:checked ~ #m4 {
+      display: block;
+    }
   </style>
 </head>
 <body>
-  <h1>Assemble le puzzle pour découvrir la surprise 💞</h1>
 
-  <input type="checkbox" id="p1">
-  <input type="checkbox" id="p2">
-  <input type="checkbox" id="p3">
-  <input type="checkbox" id="p4">
-  <input type="checkbox" id="p5">
-  <input type="checkbox" id="p6">
-  <input type="checkbox" id="p7">
-  <input type="checkbox" id="p8">
-  <input type="checkbox" id="p9">
+  <h1>Ramasse une feuille, lis ce qu’elle murmure 🍁</h1>
 
-  <div class="puzzle">
-    <label for="p1"><div class="piece"></div></label>
-    <label for="p2"><div class="piece"></div></label>
-    <label for="p3"><div class="piece"></div></label>
-    <label for="p4"><div class="piece"></div></label>
-    <label for="p5"><div class="piece"></div></label>
-    <label for="p6"><div class="piece"></div></label>
-    <label for="p7"><div class="piece"></div></label>
-    <label for="p8"><div class="piece"></div></label>
-    <label for="p9"><div class="piece"></div></label>
-  </div>
+  <!-- Feuilles cliquables -->
+  <input type="checkbox" id="f1">
+  <label for="f1" class="feuille">🍂</label>
+
+  <input type="checkbox" id="f2">
+  <label for="f2" class="feuille">🍁</label>
+
+  <input type="checkbox" id="f3">
+  <label for="f3" class="feuille">🍃</label>
+
+  <input type="checkbox" id="f4">
+  <label for="f4" class="feuille">🍂</label>
+
+  <!-- Messages cachés -->
+  <div id="m1" class="message">Tu es la plus douce des saisons dans ma vie. 🍁</div>
+  <div id="m2" class="message">Même quand tout tombe, ton sourire reste. 🌾</div>
+  <div id="m3" class="message">Un vent léger m’a soufflé ton nom. Il s’appelle tendresse. 🍃</div>
+  <div id="m4" class="message">Je ramasserais mille feuilles si chacune me ramenait vers toi. 🍂</div>
+
 </body>
 </html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Puzzle pour toi</title>
+  <style>
+    body {
+      background: #fff9f4;
+      font-family: sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
+
+    h1 {
+      color: #d37d7d;
+    }
+
+    .puzzle {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-gap: 5px;
+      justify-content: center;
+      margin-top: 30px;
+    }
+
+    .piece {
+      width: 100px;
+      height: 100px;
+      background-color: #eee;
+      background-image: url('https://imgur.com/a/hNdpm5e');
+      background-size: 300px 300px;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      transition: opacity 0.5s;
+      opacity: 0;
+    }
+
+    input[type="checkbox"] {
+      display: none;
+    }
+
+    label {
+      display: block;
+    }
+
+    /* Chaque pièce de puzzle visible au clic */
+    input#p1:checked ~ .puzzle label[for="p1"] .piece { opacity: 1; background-position: 0px 0px; }
+    input#p2:checked ~ .puzzle label[for="p2"] .piece { opacity: 1; background-position: -100px 0px; }
+    input#p3:checked ~ .puzzle label[for="p3"] .piece { opacity: 1; background-position: -200px 0px; }
+    input#p4:checked ~ .puzzle label[for="p4"] .piece { opacity: 1; background-position: 0px -100px; }
+    input#p5:checked ~ .puzzle label[for="p5"] .piece { opacity: 1; background-position: -100px -100px; }
+    input#p6:checked ~ .puzzle label[for="p6"] .piece { opacity: 1; background-position: -200px -100px; }
+    input#p7:checked ~ .puzzle label[for="p7"] .piece { opacity: 1; background-position: 0px -200px; }
+    input#p8:checked ~ .puzzle label[for="p8"] .piece { opacity: 1; background-position: -100px -200px; }
+    input#p9:checked ~ .puzzle label[for="p9"] .piece { opacity: 1; background-position: -200px -200px; }
+  </style>
+</head>
+<body>
+  <h1>Assemble le puzzle pour découvrir la surprise 💞</h1>
+
+  <!-- Cases invisibles qui gèrent les clics -->
+  <input type="checkbox" id="p1">
+  <input type="checkbox" id="p2">
+  <input type="checkbox" id="p3">
+  <input type="checkbox" id="p4">
+  <input type="checkbox" id="p5">
+  <input type="checkbox" id="p6">
+  <input type="checkbox" id="p7">
+  <input type="checkbox" id="p8">
+  <input type="checkbox" id="p9">
+
+  <!-- Grille de puzzle -->
+  <div class="puzzle">
+    <label for="p1"><div class="piece"></div></label>
+    <label for="p2"><div class="piece"></div></label>
+    <label for="p3"><div class="piece"></div></label>
+    <label for="p4"><div class="piece"></div></label>
+    <label for="p5"><div class="piece"></div></label>
+    <label for="p6"><div class="piece"></div></label>
+    <label for="p7"><div class="piece"></div></label>
+    <label for="p8"><div class="piece"></div></label>
+    <label for="p9"><div class="piece"></div></label>
+  </div>
+</body>
+</html>

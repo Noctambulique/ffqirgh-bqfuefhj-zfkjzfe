@@ -1,5 +1,5 @@
 // --- Initialisation canvas ---
-const canvas = document.getElementById("map");
+const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 canvas.width = 800;
@@ -46,15 +46,15 @@ function drawTown() {
 
 // --- Boucle de jeu ---
 function gameLoop() {
-    // Effacer l’écran
+    // Effacer l’écran (fond vert)
     ctx.fillStyle = "green";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Déplacement
-    if (keys["ArrowUp"]) player.y -= player.speed;
-    if (keys["ArrowDown"]) player.y += player.speed;
-    if (keys["ArrowLeft"]) player.x -= player.speed;
-    if (keys["ArrowRight"]) player.x += player.speed;
+    // Déplacement joueur (flèches + ZQSD)
+    if (keys["ArrowUp"] || keys["z"]) player.y -= player.speed;
+    if (keys["ArrowDown"] || keys["s"]) player.y += player.speed;
+    if (keys["ArrowLeft"] || keys["q"]) player.x -= player.speed;
+    if (keys["ArrowRight"] || keys["d"]) player.x += player.speed;
 
     // Dessiner la ville
     drawTown();
@@ -68,4 +68,3 @@ function gameLoop() {
 
 // Lancer le jeu
 gameLoop();
-

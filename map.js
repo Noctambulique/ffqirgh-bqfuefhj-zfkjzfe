@@ -5,11 +5,15 @@ const ctx = canvas.getContext("2d");
 canvas.width = 800;
 canvas.height = 600;
 
+// --- Charger les images ---
+const houseImg = new Image();
+houseImg.src = "assets/house.png"; // ✅ Mets ton image dans /assets/
+
 // --- Définition de la carte (ville) ---
 const town = {
   houses: [
-    { id: "house1", x: 300, y: 200, w: 80, h: 80, door: { x: 330, y: 260, w: 20, h: 20 } },
-    { id: "house2", x: 500, y: 350, w: 100, h: 100, door: { x: 540, y: 420, w: 24, h: 22 } }
+    { id: "house1", x: 300, y: 200, w: 80, h: 80 },
+    { id: "house2", x: 500, y: 350, w: 100, h: 100 }
   ]
 };
 
@@ -24,23 +28,24 @@ let player = {
 
 // --- Entrées clavier ---
 let keys = {};
-document.addEventListener("keydown", (e) => {
-    keys[e.key] = true;
-});
-document.addEventListener("keyup", (e) => {
-    keys[e.key] = false;
-});
+document.addEventListener("keydown", (e) => { keys[e.key] = true; });
+document.addEventListener("keyup", (e) => { keys[e.key] = false; });
 
-// --- Dessiner la carte ---
-function drawTown() {
-    town.houses.forEach(house => {
-        // Maison (rectangle gris)
+// --- Dessiner une maison ---
+function drawHouse(house) {
+    if (houseImg.complete) {
+        ctx.drawImage(houseImg, house.x, house.y, house.w, house.h);
+    } else {
+        // ✅ Si l'image n'est pas encore chargée, dessiner un carré gris provisoire
         ctx.fillStyle = "lightgray";
         ctx.fillRect(house.x, house.y, house.w, house.h);
+    }
+}
 
-        // Porte (rectangle marron)
-        ctx.fillStyle = "saddlebrown";
-        ctx.fillRect(house.door.x, house.door.y, house.door.w, house.door.h);
+// --- Dessiner la ville ---
+function drawTown() {
+    town.houses.forEach(house => {
+        drawHouse(house);
     });
 }
 
@@ -63,21 +68,10 @@ function gameLoop() {
     ctx.fillStyle = player.color;
     ctx.fillRect(player.x, player.y, player.size, player.size);
 
-
-  // Charger l'image de maison
-const houseImg = new Image();
-houseImg.src = "20250822_1305_Centre d'archives nocturne_simple_compose_01k38q6wp3endsa7d41y0w1wke-Photoroom.png";
-
-// Dessiner une maison
-function drawHouse(house) {
-    if (houseImg.complete) {
-        ctx.drawImage(houseImg, house.x, house.y, house.w, house.h);
-    }
-}
-
-
     requestAnimationFrame(gameLoop);
 }
 
-// Lancer le jeu
-gameLoop();
+// Lancer le jeu seulement quand l’image est chargée
+houseImg.onload = () => {
+    gameLoop();
+};

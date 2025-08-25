@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  background: #cceeff; /* ciel */
+  background: #0e061a; /* ciel */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -10,7 +10,7 @@ body {
 
 #gameCanvas {
   border: 2px solid black;
-  background: #66cc66; /* herbe */
+  background: #a676e8; /* herbe */
 }
 
 #hud {

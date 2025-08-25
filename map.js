@@ -63,6 +63,19 @@ function gameLoop() {
     ctx.fillStyle = player.color;
     ctx.fillRect(player.x, player.y, player.size, player.size);
 
+
+  // Charger l'image de maison
+const houseImg = new Image();
+houseImg.src = "20250822_1305_Centre d'archives nocturne_simple_compose_01k38q6wp3endsa7d41y0w1wke-Photoroom.png";
+
+// Dessiner une maison
+function drawHouse(house) {
+    if (houseImg.complete) {
+        ctx.drawImage(houseImg, house.x, house.y, house.w, house.h);
+    }
+}
+
+
     requestAnimationFrame(gameLoop);
 }
 

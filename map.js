@@ -61,8 +61,15 @@ function gameLoop() {
     if (keys["ArrowLeft"] || keys["q"]) player.x -= player.speed;
     if (keys["ArrowRight"] || keys["d"]) player.x += player.speed;
 
-    // Dessiner la ville
-    drawTown();
+   function drawTown() {
+    town.houses.forEach(house => {
+        drawHouse(house);
+
+        // Porte (rectangle marron au-dessus de l'image si tu veux la garder)
+        ctx.fillStyle = "saddlebrown";
+        ctx.fillRect(house.door.x, house.door.y, house.door.w, house.door.h);
+    });
+}
 
     // Dessiner le joueur
     ctx.fillStyle = player.color;

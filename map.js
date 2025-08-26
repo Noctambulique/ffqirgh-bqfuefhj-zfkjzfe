@@ -31,14 +31,14 @@ let keys = {};
 document.addEventListener("keydown", (e) => { keys[e.key] = true; });
 document.addEventListener("keyup", (e) => { keys[e.key] = false; });
 
-// --- Dessiner une maison ---
+// Charger l'image de maison
+const houseImg = new Image();
+houseImg.src = "assets/20250822_1738_Boutique de Jeux Éclairée_simple_compose_01k396sywzfjzsxzfxm2wj11zg-Photoroom (1).png";
+
+// Dessiner une maison
 function drawHouse(house) {
     if (houseImg.complete) {
         ctx.drawImage(houseImg, house.x, house.y, house.w, house.h);
-    } else {
-        // ✅ Si l'image n'est pas encore chargée, dessiner un carré gris provisoire
-        ctx.fillStyle = "lightgray";
-        ctx.fillRect(house.x, house.y, house.w, house.h);
     }
 }
 

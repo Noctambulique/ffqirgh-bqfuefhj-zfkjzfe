@@ -1,3 +1,5 @@
+<canvas id="gameCanvas"></canvas>
+<script>
 // --- Initialisation canvas ---
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
@@ -5,17 +7,50 @@ const ctx = canvas.getContext("2d");
 canvas.width = 800;
 canvas.height = 600;
 
-// --- Charger l'image de maison ---
-const houseImg = new Image();
-houseImg.src = "assets/house.png"; // Mets ton image ici
+// --- Images des bâtiments ---
+const buildingFiles = [
+  "DETECTIVE.png",
+  "JEUVIDEO.png",
+  "ARCHIVE.png",
+  "MUSEE.png",
+  "VOYAGE.png",
+  "MUSIQUE.png",
+  "VETEMENT.png",
+  "CINEMA.png"
+];
 
-// --- Définition de la carte (ville) ---
-const town = {
-  houses: [
-    { id: "house1", x: 300, y: 200, w: 80, h: 80, door: { x: 330, y: 260, w: 20, h: 20 } },
-    { id: "house2", x: 500, y: 350, w: 100, h: 100, door: { x: 540, y: 420, w: 24, h: 22 } }
-  ]
-};
+const buildings = [];
+let imagesLoaded = 0;
+
+// --- Charger les images ---
+buildingFiles.forEach((file, index) => {
+  const img = new Image();
+  img.src = "assets/" + file;
+  img.onload = () => {
+    imagesLoaded++;
+    if (imagesLoaded === buildingFiles.length) {
+      setupTown();
+      gameLoop();
+    }
+  };
+  buildings.push({ img });
+});
+
+// --- Définir la position des bâtiments en cercle ---
+function setupTown() {
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
+  const radius = 200;
+  const angleStep = (2 * Math.PI) / buildings.length;
+
+  buildings.forEach((b, i) => {
+    const angle = i * angleStep;
+    b.w = 100;
+    b.h = 100;
+    b.x = centerX + radius * Math.cos(angle) - b.w / 2;
+    b.y = centerY + radius * Math.sin(angle) - b.h / 2;
+  });
+}
 
 // --- Personnage ---
 let player = {
@@ -32,23 +67,13 @@ document.addEventListener("keydown", (e) => { keys[e.key] = true; });
 document.addEventListener("keyup", (e) => { keys[e.key] = false; });
 
 // --- Dessiner une maison ---
-function drawHouse(house) {
-  if (houseImg.complete) {
-    ctx.drawImage(houseImg, house.x, house.y, house.w, house.h);
-
-    // Porte (dessinée en marron)
-    if (house.door) {
-      ctx.fillStyle = "saddlebrown";
-      ctx.fillRect(house.door.x, house.door.y, house.door.w, house.door.h);
-    }
-  }
+function drawBuilding(b) {
+  ctx.drawImage(b.img, b.x, b.y, b.w, b.h);
 }
 
 // --- Dessiner la ville ---
 function drawTown() {
-  town.houses.forEach(house => {
-    drawHouse(house);
-  });
+  buildings.forEach(b => drawBuilding(b));
 }
 
 // --- Boucle de jeu ---
@@ -63,7 +88,7 @@ function gameLoop() {
   if (keys["ArrowLeft"] || keys["q"]) player.x -= player.speed;
   if (keys["ArrowRight"] || keys["d"]) player.x += player.speed;
 
-  // Dessiner les maisons
+  // Dessiner les bâtiments
   drawTown();
 
   // Dessiner le joueur
@@ -72,8 +97,4 @@ function gameLoop() {
 
   requestAnimationFrame(gameLoop);
 }
-
-// Lancer le jeu seulement quand l’image est chargée
-houseImg.onload = () => {
-  gameLoop();
-};
+</script>

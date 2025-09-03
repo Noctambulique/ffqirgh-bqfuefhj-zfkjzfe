@@ -56,7 +56,7 @@
   </div>
   <div class="hud" aria-hidden="true">
     <div><strong>Déplacements</strong> <kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd> ou <kbd>Flèches</kbd></div>
-    <div><strong>Entrer</strong> <kbd>E</kbd> quand vous êtes devant une porte</div>
+    <div><strong>Entrer</strong> <kbd>E</kbd> quand vous êtes devant une maison</div>
   </div>
   <div id="prompt" class="prompt">Appuyez sur <kbd>E</kbd> pour entrer</div>
 
@@ -65,11 +65,9 @@
     world: { width: 960, height: 600 },
     center: { x: 480, y: 300 },
     circleRadius: 200,
-    houseCount: 8, // ✅ 8 maisons désormais
+    houseCount: 8, // ✅ 8 maisons
     house: {
       size: 80,
-      doorSize: 18,
-      doorDepth: 6,
     },
     player: {
       size: 16,
@@ -78,7 +76,18 @@
       speed: 2.6,
       start: { x: 480, y: 300 },
     },
-    links: { map: {} },
+    links: {
+      map: {
+        1: "docs/maison1.pdf",
+        2: "docs/maison2.xlsx",
+        3: "docs/maison3.html",
+        4: "docs/maison4.pdf",
+        5: "docs/maison5.xlsx",
+        6: "docs/maison6.html",
+        7: "docs/maison7.pdf",
+        8: "docs/maison8.xlsx"
+      }
+    }
   };
 
   // ✅ Tes 8 images PNG
@@ -95,6 +104,7 @@
 
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
+  const prompt = document.getElementById("prompt");
 
   const TAU = Math.PI * 2;
   const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
@@ -151,14 +161,44 @@
     ctx.lineWidth=2; ctx.strokeStyle=CONFIG.player.outline; ctx.stroke();
   }
 
+  // --- Détection proximité maison
+  function getNearbyHouse() {
+    for (const h of HOUSES) {
+      const dist = Math.hypot(player.x - h.x, player.y - h.y);
+      if (dist < CONFIG.house.size * 0.6) {
+        return h;
+      }
+    }
+    return null;
+  }
+
+  function updatePrompt() {
+    const h = getNearbyHouse();
+    if (h && CONFIG.links.map[h.id]) {
+      prompt.style.display = "block";
+    } else {
+      prompt.style.display = "none";
+    }
+  }
+
+  // --- Entrer dans la maison
+  window.addEventListener("keydown", e => {
+    if (e.key.toLowerCase() === "e") {
+      const h = getNearbyHouse();
+      if (h && CONFIG.links.map[h.id]) {
+        window.location.href = CONFIG.links.map[h.id];
+      }
+    }
+  });
+
   function loop(){
     const next=tryMove(player.x,player.y);
     player.x=next.x; player.y=next.y;
     draw();
+    updatePrompt();
     requestAnimationFrame(loop);
   }
   loop();
-
   </script>
 </body>
 </html>

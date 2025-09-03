@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Petit Village — Accès protégé</title>
+  <title>Accès Secret — Village</title>
   <style>
     :root{
       --violet:#6b2fb3;
@@ -13,15 +13,70 @@
     html,body{
       height:100%;
       margin:0;
-      background:var(--violet);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-family: "Courier New", monospace;
+      background:#0d0d0f;
+      color:#dcdcdc;
     }
-    .wrap{
-      display:grid;
-      place-items:center;
-      height:100%;
+    /* --- Écran secret --- */
+    #lockscreen {
+      position:fixed;
+      inset:0;
+      background:radial-gradient(circle at center, #1a1a20 0%, #000 100%);
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
     }
-    canvas{
+    #lockscreen h1 {
+      font-size:2rem;
+      margin-bottom:1rem;
+      letter-spacing:2px;
+      text-shadow:0 0 10px rgba(255,255,255,.25);
+    }
+    #lockscreen p {
+      margin-bottom:1rem;
+      font-size:1rem;
+      opacity:.85;
+    }
+    #lockscreen input {
+      padding:10px 14px;
+      border:1px solid #444;
+      border-radius:6px;
+      background:#111;
+      color:#eee;
+      font-family:inherit;
+      font-size:1rem;
+      letter-spacing:1px;
+      outline:none;
+      box-shadow:0 0 12px rgba(0,255,150,.3);
+      text-align:center;
+    }
+    #lockscreen button {
+      margin-top:1rem;
+      padding:10px 20px;
+      background:#111;
+      border:1px solid #0f0;
+      color:#0f0;
+      font-family:inherit;
+      font-size:1rem;
+      border-radius:6px;
+      cursor:pointer;
+      transition:all .2s;
+    }
+    #lockscreen button:hover {
+      background:#0f0;
+      color:#000;
+    }
+    #error {
+      margin-top:1rem;
+      color:#f55;
+      display:none;
+    }
+
+    /* --- Map village --- */
+    .wrap{ display:none; place-items:center; height:100%; }
+    canvas{ 
       background: radial-gradient(1200px 800px at center, rgba(255,255,255,.06), rgba(255,255,255,0) 60%), var(--violet);
       box-shadow: 0 20px 60px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.08);
       border-radius: 16px;
@@ -48,101 +103,41 @@
       background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.35);
       display:none; white-space:nowrap; text-shadow:0 2px 6px var(--ui-shadow);
     }
-
-    /* Modal code d'accès */
-    #codeModal {
-      position: fixed;
-      inset: 0;
-      display: none; /* affiché si besoin */
-      place-items: center;
-      background: rgba(0,0,0,0.6);
-      z-index: 2000;
-      gap: 12px;
-      display: grid;
-    }
-    #codeModal .modal {
-      background: #fff;
-      color: #222;
-      padding: 18px;
-      border-radius: 12px;
-      width: 360px;
-      max-width: calc(100% - 40px);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-      text-align: center;
-      font-size: 15px;
-    }
-    #codeModal input[type="text"]{
-      width:100%;
-      padding:10px;
-      margin-top:8px;
-      border-radius:8px;
-      border:1px solid #ddd;
-      font-size:16px;
-      box-sizing:border-box;
-    }
-    #codeModal .actions{
-      margin-top:12px;
-      display:flex;
-      justify-content:center;
-      gap:8px;
-    }
-    #codeModal button{
-      padding:8px 12px;
-      border-radius:8px;
-      border:0;
-      cursor:pointer;
-      background: #6b2fb3;
-      color: #fff;
-      font-weight:600;
-    }
-    #codeModal button.secondary{
-      background: transparent;
-      border: 1px solid #ccc;
-      color: #333;
-      font-weight: 600;
-    }
-    #codeModal .error{
-      color:#a00;
-      margin-top:8px;
-      display:none;
-    }
-
-    @media (max-width:420px){
-      #codeModal .modal { width: 92%; }
-    }
   </style>
 </head>
 <body>
+  <!-- Écran secret -->
+  <div id="lockscreen">
+    <h1>🔎 Bureau du Détective</h1>
+    <p>Entrez le mot de passe pour accéder au village secret :</p>
+    <input type="password" id="code" placeholder="Mot de passe" />
+    <button onclick="checkCode()">Entrer</button>
+    <div id="error">❌ Code incorrect...</div>
+  </div>
+
+  <!-- Village -->
   <div class="wrap">
     <canvas id="game" width="960" height="600" aria-label="Village circulaire"></canvas>
   </div>
-
   <div class="hud" aria-hidden="true">
     <div><strong>Déplacements</strong> <kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd> ou <kbd>Flèches</kbd></div>
     <div><strong>Entrer</strong> <kbd>E</kbd> quand vous êtes devant une maison</div>
   </div>
-
   <div id="prompt" class="prompt">Appuyez sur <kbd>E</kbd> pour entrer</div>
 
-  <!-- Modal d'accès -->
-  <div id="codeModal" role="dialog" aria-modal="true" aria-labelledby="codeTitle">
-    <div class="modal" role="document">
-      <h2 id="codeTitle">Accès au village</h2>
-      <p>Entrez le code pour accéder à la map</p>
-      <input id="accessCode" type="text" placeholder="Code d'accès" autocomplete="off" />
-      <div class="actions">
-        <button id="codeSubmit">Entrer</button>
-        <button id="codeCancel" class="secondary">Annuler</button>
-      </div>
-      <div id="codeError" class="error">Code incorrect — réessayez</div>
-    </div>
-  </div>
-
   <script>
-  /* -------------------------
-     CONFIG — personnalise ici
-     ------------------------- */
-  const ACCESS_CODE = 'Noctambule'; // code attendu (insensible à la casse)
+  // --- Écran secret ---
+  function checkCode(){
+    const input=document.getElementById("code").value.trim();
+    if(input==="Noctambule"){
+      document.getElementById("lockscreen").style.display="none";
+      document.querySelector(".wrap").style.display="grid";
+    } else {
+      document.getElementById("error").style.display="block";
+    }
+  }
+
+  // --- Village ---
   const CONFIG = {
     world: { width: 960, height: 600 },
     center: { x: 480, y: 300 },
@@ -150,24 +145,21 @@
     houseCount: 8,
     house: { size: 80 },
     player: {
-      size: 16,
-      color: '#ffd166',
+      size: 16, color: '#ffd166',
       outline: 'rgba(0,0,0,.45)',
       speed: 2.6,
       start: { x: 480, y: 300 },
     },
-    links: {
-      map: {
-        1: "Excel Art.xlsx",
-        2: "Musique$=.png",
-        3: "Image1.jpg",
-        4: "film.png",
-        5: "Power Point Ultime +.pdf",
-        6: "jeu.png",
-        7: "Philosophie (version 1) (version 1).xlsx",
-        8: "docs/maison8.xlsx"
-      }
-    }
+    links: { map: {
+      1: "docs/maison1.pdf",
+      2: "docs/maison2.xlsx",
+      3: "docs/maison3.html",
+      4: "docs/maison4.pdf",
+      5: "docs/maison5.xlsx",
+      6: "docs/maison6.html",
+      7: "docs/maison7.pdf",
+      8: "docs/maison8.xlsx"
+    }}
   };
 
   const HOUSE_IMAGES = [
@@ -181,29 +173,12 @@
     "http://www.image-heberg.fr/files/17569316144126423008.png"
   ];
 
-  /* -------------------------
-     Variables runtime
-     ------------------------- */
-  const canvas = document.getElementById('game');
-  const ctx = canvas.getContext('2d');
-  const prompt = document.getElementById('prompt');
-  const codeModal = document.getElementById('codeModal');
-  const codeInput = document.getElementById('accessCode');
-  const codeSubmit = document.getElementById('codeSubmit');
-  const codeCancel = document.getElementById('codeCancel');
-  const codeError = document.getElementById('codeError');
+  const canvas=document.getElementById('game');
+  const ctx=canvas.getContext('2d');
+  const prompt=document.getElementById("prompt");
+  const TAU=Math.PI*2;
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
-  const TAU = Math.PI * 2;
-  const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
-
-  let gameUnlocked = false; // devient true après saisie correcte
-  let animationStarted = false; // empêche double démarrage de la boucle
-  canvas.width = CONFIG.world.width;
-  canvas.height = CONFIG.world.height;
-
-  /* -------------------------
-     Génération des maisons
-     ------------------------- */
   function generateHouses(){
     const houses=[];
     const {x:cx,y:cy}=CONFIG.center;
@@ -212,40 +187,18 @@
       const angle=(i/CONFIG.houseCount)*TAU - Math.PI/2;
       const hx=cx+Math.cos(angle)*r;
       const hy=cy+Math.sin(angle)*r;
-      houses.push({
-        id:i+1,
-        x:hx, y:hy,
-        w:CONFIG.house.size, h:CONFIG.house.size,
-        img:new Image()
-      });
-      houses[i].img.src = HOUSE_IMAGES[i % HOUSE_IMAGES.length];
+      houses.push({id:i+1,x:hx,y:hy,w:CONFIG.house.size,h:CONFIG.house.size,img:new Image()});
+      houses[i].img.src=HOUSE_IMAGES[i%HOUSE_IMAGES.length];
     }
     return houses;
   }
-  const HOUSES = generateHouses();
 
-  /* -------------------------
-     Contrôles clavier (activés seulement après unlock)
-     ------------------------- */
-  const keys = new Set();
-  window.addEventListener('keydown', e=>{
-    if(!gameUnlocked) return;
-    // Ne pas interférer si l'utilisateur écrit dans un input
-    const active = document.activeElement;
-    if(active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
-    keys.add(e.key.toLowerCase());
-  });
-  window.addEventListener('keyup', e=>{
-    if(!gameUnlocked) return;
-    const active = document.activeElement;
-    if(active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
-    keys.delete(e.key.toLowerCase());
-  });
+  const HOUSES=generateHouses();
+  const keys=new Set();
+  window.addEventListener('keydown',e=>keys.add(e.key.toLowerCase()));
+  window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
 
-  /* -------------------------
-     Joueur & mouvements
-     ------------------------- */
-  const player = { x: CONFIG.player.start.x, y: CONFIG.player.start.y, r: CONFIG.player.size };
+  const player={x:CONFIG.player.start.x,y:CONFIG.player.start.y,r:CONFIG.player.size};
 
   function tryMove(px,py){
     let dx=0,dy=0;
@@ -254,143 +207,47 @@
     if(keys.has('q')||keys.has('arrowleft')) dx-=1;
     if(keys.has('d')||keys.has('arrowright')) dx+=1;
     const len=Math.hypot(dx,dy)||1;
-    dx = dx/len * CONFIG.player.speed;
-    dy = dy/len * CONFIG.player.speed;
-    return { x: clamp(px+dx, player.r, CONFIG.world.width - player.r),
-             y: clamp(py+dy, player.r, CONFIG.world.height - player.r) };
+    dx=dx/len*CONFIG.player.speed;
+    dy=dy/len*CONFIG.player.speed;
+    return {x:clamp(px+dx,player.r,CONFIG.world.width-player.r), y:clamp(py+dy,player.r,CONFIG.world.height-player.r)};
   }
 
-  /* -------------------------
-     Dessin
-     ------------------------- */
-  function drawHouse(h){
-    ctx.drawImage(h.img, h.x - h.w/2, h.y - h.h/2, h.w, h.h);
-  }
-
+  function drawHouse(h){ ctx.drawImage(h.img,h.x-h.w/2,h.y-h.h/2,h.w,h.h); }
   function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    // léger halo central
-    const g = ctx.createRadialGradient(CONFIG.center.x, CONFIG.center.y, 10, CONFIG.center.x, CONFIG.center.y, CONFIG.circleRadius*1.4);
-    g.addColorStop(0, 'rgba(255,255,255,.06)');
-    g.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = g; ctx.fillRect(0,0,canvas.width,canvas.height);
-
     for(const h of HOUSES) drawHouse(h);
-
     ctx.beginPath();
-    ctx.arc(player.x, player.y, player.r, 0, TAU);
-    ctx.fillStyle = CONFIG.player.color; ctx.fill();
-    ctx.lineWidth = 2; ctx.strokeStyle = CONFIG.player.outline; ctx.stroke();
-
-    ctx.globalAlpha = .35;
-    ctx.beginPath(); ctx.ellipse(player.x, player.y + player.r * .6, player.r * 1.1, player.r * .45, 0, 0, TAU);
-    ctx.fillStyle = '#000'; ctx.fill();
-    ctx.globalAlpha = 1;
-
-    ctx.font = '600 14px system-ui, -apple-system, Segoe UI, Roboto, Arial';
-    ctx.fillStyle = 'rgba(255,255,255,.85)';
-    ctx.textAlign = 'center';
-    ctx.fillText('Village circulaire — Démo', CONFIG.world.width/2, 24);
+    ctx.arc(player.x,player.y,player.r,0,TAU);
+    ctx.fillStyle=CONFIG.player.color; ctx.fill();
+    ctx.lineWidth=2; ctx.strokeStyle=CONFIG.player.outline; ctx.stroke();
   }
 
-  /* -------------------------
-     Proximité maison & prompt
-     ------------------------- */
-  function getNearbyHouse() {
-    for (const h of HOUSES) {
-      const dist = Math.hypot(player.x - h.x, player.y - h.y);
-      if (dist < CONFIG.house.size * 0.6) return h;
+  function getNearbyHouse(){
+    for(const h of HOUSES){
+      const dist=Math.hypot(player.x-h.x,player.y-h.y);
+      if(dist<CONFIG.house.size*0.6) return h;
     }
     return null;
   }
-
-  function updatePrompt() {
-    const h = getNearbyHouse();
-    if (h && CONFIG.links.map[h.id]) prompt.style.display = "block";
-    else prompt.style.display = "none";
+  function updatePrompt(){
+    const h=getNearbyHouse();
+    prompt.style.display=(h&&CONFIG.links.map[h.id])?"block":"none";
   }
 
-  /* -------------------------
-     Entrée dans la maison (touche E)
-     ------------------------- */
-  window.addEventListener('keydown', e => {
-    if(!gameUnlocked) return;
-    // ignore si on tape dans un input
-    const active = document.activeElement;
-    if(active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
-    if (e.key.toLowerCase() === 'e') {
-      const h = getNearbyHouse();
-      if (h && CONFIG.links.map[h.id]) {
-        const url = CONFIG.links.map[h.id];
-        // encodeURI protège contre les espaces dans les noms de fichiers
-        window.location.href = encodeURI(url);
-      }
+  window.addEventListener("keydown",e=>{
+    if(e.key.toLowerCase()==="e"){
+      const h=getNearbyHouse();
+      if(h&&CONFIG.links.map[h.id]) window.location.href=CONFIG.links.map[h.id];
     }
   });
 
-  /* -------------------------
-     Boucle de jeu (démarrée après unlock)
-     ------------------------- */
   function loop(){
-    const next = tryMove(player.x, player.y);
-    player.x = next.x; player.y = next.y;
-    draw();
-    updatePrompt();
+    const next=tryMove(player.x,player.y);
+    player.x=next.x; player.y=next.y;
+    draw(); updatePrompt();
     requestAnimationFrame(loop);
   }
-
-  function startGame(){
-    if(animationStarted) return;
-    animationStarted = true;
-    gameUnlocked = true;
-    codeModal.style.display = 'none';
-    canvas.focus();
-    // démarre la boucle et autorise les contrôles
-    requestAnimationFrame(loop);
-  }
-
-  /* -------------------------
-     Gestion du modal de code
-     ------------------------- */
-  function showModal(){
-    codeError.style.display = 'none';
-    codeInput.value = '';
-    codeModal.style.display = 'grid';
-    codeInput.focus();
-  }
-
-  function checkCode(){
-    const value = (codeInput.value || '').trim();
-    if(value.toLowerCase() === ACCESS_CODE.toLowerCase()){
-      localStorage.setItem('villageUnlocked', 'true');
-      startGame();
-    } else {
-      codeError.style.display = 'block';
-      codeInput.value = '';
-      codeInput.focus();
-    }
-  }
-
-  codeSubmit.addEventListener('click', checkCode);
-  codeInput.addEventListener('keydown', e => { if(e.key === 'Enter') checkCode(); });
-  codeCancel.addEventListener('click', () => {
-    // Annuler : on ferme le modal mais on ne lance pas la map.
-    // Ici on redirige vers about:blank pour éviter d'exposer la map.
-    // Tu peux modifier ce comportement (ex : window.close()).
-    window.location.href = 'about:blank';
-  });
-
-  /* -------------------------
-     Initialisation : vérifier si le code a déjà été validé (localStorage)
-     ------------------------- */
-  if(localStorage.getItem('villageUnlocked') === 'true'){
-    // déjà validé précédemment : démarrer directement
-    startGame();
-  } else {
-    // sinon : afficher modal et attendre saisie
-    showModal();
-  }
-
+  loop();
   </script>
 </body>
 </html>

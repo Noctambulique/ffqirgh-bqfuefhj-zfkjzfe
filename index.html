@@ -1,15 +1,374 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Petite Ville</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Petit Village — Démo HTML seule</title>
+  <style>
+    /* ================================
+       STYLES (faciles à personnaliser)
+       ================================ */
+    :root{
+      --violet:#6b2fb3;          /* Fond global */
+      --ui:#ffffff;              /* Couleur du texte UI */
+      --ui-shadow: rgba(0,0,0,.35);
+    }
+    html,body{
+      height:100%;
+      margin:0;
+      background:var(--violet);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    .wrap{
+      display:grid;
+      place-items:center;
+      height:100%;
+    }
+    canvas{ 
+      background: radial-gradient(1200px 800px at center, rgba(255,255,255,.06), rgba(255,255,255,0) 60%), var(--violet);
+      box-shadow: 0 20px 60px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.08);
+      border-radius: 16px;
+      image-rendering: pixelated; /* look rétro propre */
+      max-width: 96vw;
+      max-height: 92vh;
+    }
+    .hud{
+      position: fixed; inset: 16px auto auto 16px; color: var(--ui);
+      text-shadow: 0 2px 6px var(--ui-shadow);
+      user-select:none; font-size:14px; line-height:1.25;
+    }
+    .hud kbd{
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.35);
+      padding: 2px 6px; border-radius: 6px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.35);
+      margin-right:4px;
+    }
+    .prompt{
+      position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+      color: var(--ui); font-weight: 600; letter-spacing:.2px;
+      padding: 8px 12px; border-radius: 10px;
+      background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.35);
+      display:none; white-space:nowrap; text-shadow:0 2px 6px var(--ui-shadow);
+    }
+  </style>
 </head>
 <body>
-  <canvas id="gameCanvas" width="800" height="600"></canvas>
-  <div id="hud">Déplace-toi avec ZQSD ou flèches. Appuie sur E devant une porte.</div>
+  <div class="wrap">
+    <canvas id="game" width="960" height="600" aria-label="Village circulaire"></canvas>
+  </div>
+  <div class="hud" aria-hidden="true">
+    <div><strong>Déplacements</strong> <kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd> ou <kbd>Flèches</kbd></div>
+    <div><strong>Entrer</strong> <kbd>E</kbd> quand vous êtes devant une porte</div>
+  </div>
+  <div id="prompt" class="prompt">Appuyez sur <kbd>E</kbd> pour entrer</div>
 
-  <!-- Charge après que le HTML est prêt -->
-  <script src="map.js" defer></script>
+  <script>
+  /* =====================================================================
+     VILLAGE — Une seule page HTML, aucun asset requis, facile à modifier.
+     Personnalisez d'abord la section CONFIG ci-dessous.
+     ===================================================================== */
+
+  const CONFIG = {
+    world: { width: 960, height: 600, background: getComputedStyle(document.documentElement).getPropertyValue('--violet') },
+    center: { x: 480, y: 300 },          // Position du cercle de maisons
+    circleRadius: 200,                    // Rayon du cercle des maisons
+    houseCount: 10,                       // Nombre de maisons (auto-disposition en cercle)
+    house: {
+      size: 60,                           // Taille de base d'une maison carrée
+      wallColor: '#f2e9e4',
+      roofColor: '#d7263d',
+      doorColor: '#3b3b3b',
+      doorSize: 18,                       // Largeur de la porte
+      doorDepth: 6,                       // Profondeur visuelle (sans collision)
+      stroke: 'rgba(0,0,0,.25)',
+      image: null,                        // Facultatif: placez une URL d'image pour remplacer le dessin vectoriel
+    },
+    player: {
+      size: 16,                           // Rayon du joueur (cercle)
+      color: '#ffd166',
+      outline: 'rgba(0,0,0,.45)',
+      speed: 2.6,                         // Pixels par frame
+      start: { x: 480, y: 300 },
+    },
+    links: {
+      // Fichiers HTML (à créer) vers lesquels on navigue en entrant dans une maison
+      // Exemple: 'house-1.html', 'maison-2.html', etc.
+      // Si non défini, on utilisera 'house-<index>.html'.
+      map: {}                              // e.g. { 1: 'maison-bleue.html', 5: 'bibliotheque.html' }
+    },
+    debug: { showCollision: false }
+  };
+
+  // ==============================================================
+  // Initialisation Canvas & Contexte
+  // ==============================================================
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+
+  // Ajuste la taille si vous modifiez le monde dans CONFIG
+  canvas.width = CONFIG.world.width; canvas.height = CONFIG.world.height;
+
+  // ==============================================================
+  // Utilitaires Math/Geom
+  // ==============================================================
+  const TAU = Math.PI * 2;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+  function circleRectCollide(cx, cy, cr, rx, ry, rw, rh){
+    // collision cercle/rectangle axis-aligned
+    const nx = clamp(cx, rx, rx + rw);
+    const ny = clamp(cy, ry, ry + rh);
+    const dx = cx - nx, dy = cy - ny;
+    return (dx*dx + dy*dy) <= cr*cr;
+  }
+
+  // ==============================================================
+  // Génération des maisons en cercle
+  // ==============================================================
+  function generateHouses(){
+    const houses = [];
+    const { x:cx, y:cy } = CONFIG.center;
+    const r = CONFIG.circleRadius;
+    for(let i=0;i<CONFIG.houseCount;i++){
+      const angle = (i / CONFIG.houseCount) * TAU - Math.PI/2; // commence en haut, sens horaire
+      const hx = cx + Math.cos(angle) * r;
+      const hy = cy + Math.sin(angle) * r;
+      const faceAngle = Math.atan2(cy - hy, cx - hx); // vers le centre
+      houses.push({
+        id: i+1,
+        x: hx, y: hy, angle: faceAngle,
+        w: CONFIG.house.size, h: CONFIG.house.size,
+      });
+    }
+    return houses;
+  }
+
+  const HOUSES = generateHouses();
+
+  // ==============================================================
+  // Entrées clavier (ZQSD, WASD, Flèches) + E
+  // ==============================================================
+  const keys = new Set();
+  window.addEventListener('keydown', e=>{
+    keys.add(e.key.toLowerCase());
+    if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) keys.add(e.key); // conserve flèches dans set
+  });
+  window.addEventListener('keyup', e=>{
+    keys.delete(e.key.toLowerCase());
+    if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) keys.delete(e.key);
+  });
+
+  // ==============================================================
+  // Joueur
+  // ==============================================================
+  const player = { x: CONFIG.player.start.x, y: CONFIG.player.start.y, r: CONFIG.player.size };
+
+  function tryMove(px, py){
+    // Déplacement avec collisions contre les corps des maisons
+    let dx = 0, dy = 0;
+    if(keys.has('z') || keys.has('w') || keys.has('ArrowUp')) dy -= 1;
+    if(keys.has('s') || keys.has('ArrowDown')) dy += 1;
+    if(keys.has('q') || keys.has('a') || keys.has('ArrowLeft')) dx -= 1;
+    if(keys.has('d') || keys.has('ArrowRight')) dx += 1;
+
+    const len = Math.hypot(dx,dy) || 1;
+    dx = dx/len * CONFIG.player.speed;
+    dy = dy/len * CONFIG.player.speed;
+
+    // Tentative sur X puis Y (résolution séparée)
+    let nx = px + dx; let ny = py;
+    for(const h of HOUSES){
+      const rect = houseRect(h);
+      if(circleRectCollide(nx, ny, player.r, rect.x, rect.y, rect.w, rect.h)){
+        // Bloque l'axe X
+        nx = px; break;
+      }
+    }
+    px = nx;
+
+    nx = px; ny = py + dy;
+    for(const h of HOUSES){
+      const rect = houseRect(h);
+      if(circleRectCollide(nx, ny, player.r, rect.x, rect.y, rect.w, rect.h)){
+        ny = py; break;
+      }
+    }
+    py = ny;
+
+    // Contrainte aux bords du monde
+    px = clamp(px, player.r, CONFIG.world.width  - player.r);
+    py = clamp(py, player.r, CONFIG.world.height - player.r);
+
+    return {x:px, y:py};
+  }
+
+  // ==============================================================
+  // Dessin des maisons (vectoriel simple) + portes orientées vers le centre
+  // ==============================================================
+  function houseRect(h){
+    // Le corps de la maison (pour collision)
+    const w = h.w, hh = h.h;
+    return { x: h.x - w/2, y: h.y - hh/2, w, h: hh };
+  }
+
+  function doorRect(h){
+    const d = CONFIG.house.doorSize;
+    const depth = CONFIG.house.doorDepth;
+    const body = houseRect(h);
+    // Porte sur le côté orienté vers le centre (angle h.angle)
+    const side = Math.round((h.angle + TAU) % TAU / (TAU/4)); // 0:Est,1:Sud,2:Ouest,3:Nord approximatif
+    if(side === 0){
+      return { x: body.x + body.w - d, y: h.y - d/2, w: d, h: d, hintX: body.x + body.w + depth, hintY: h.y };
+    }else if(side === 1){
+      return { x: h.x - d/2, y: body.y + body.h - d, w: d, h: d, hintX: h.x, hintY: body.y + body.h + depth };
+    }else if(side === 2){
+      return { x: body.x, y: h.y - d/2, w: d, h: d, hintX: body.x - depth, hintY: h.y };
+    }else{ // 3: Nord
+      return { x: h.x - d/2, y: body.y, w: d, h: d, hintX: h.x, hintY: body.y - depth };
+    }
+  }
+
+  function drawHouse(h){
+    const body = houseRect(h);
+
+    if(CONFIG.house.image){
+      // Option image: centré à (h.x, h.y)
+      const img = getHouseImage();
+      const w = body.w, hh = body.h;
+      ctx.drawImage(img, body.x, body.y, w, hh);
+    } else {
+      // Corps
+      ctx.fillStyle = CONFIG.house.wallColor;
+      ctx.strokeStyle = CONFIG.house.stroke;
+      ctx.lineWidth = 2;
+      roundRect(ctx, body.x, body.y, body.w, body.h, 8, true, true);
+
+      // Toit simple triangle
+      ctx.fillStyle = CONFIG.house.roofColor;
+      ctx.beginPath();
+      ctx.moveTo(body.x - 4, body.y + 18);
+      ctx.lineTo(body.x + body.w/2, body.y - 18);
+      ctx.lineTo(body.x + body.w + 4, body.y + 18);
+      ctx.closePath();
+      ctx.fill();
+
+      // Porte
+      const d = doorRect(h);
+      ctx.fillStyle = CONFIG.house.doorColor;
+      roundRect(ctx, d.x, d.y, d.w, d.h, 3, true, false);
+    }
+
+    if(CONFIG.debug.showCollision){
+      const d = doorRect(h);
+      ctx.strokeStyle = 'lime'; ctx.strokeRect(d.x, d.y, d.w, d.h);
+      ctx.strokeStyle = 'red'; const r = houseRect(h); ctx.strokeRect(r.x, r.y, r.w, r.h);
+    }
+  }
+
+  // Petit cache pour l'image custom des maisons (si utilisée)
+  let _houseImage = null; let _imageURL = null;
+  function getHouseImage(){
+    if(CONFIG.house.image && _imageURL !== CONFIG.house.image){
+      _houseImage = new Image(); _houseImage.src = CONFIG.house.image; _imageURL = CONFIG.house.image;
+    }
+    return _houseImage;
+  }
+
+  function roundRect(ctx, x, y, w, h, r, fill, stroke){
+    if (w < 2 * r) r = w / 2;
+    if (h < 2 * r) r = h / 2;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+    if (fill) ctx.fill();
+    if (stroke) ctx.stroke();
+  }
+
+  // ==============================================================
+  // Prompt d'entrée (E) quand le joueur est dans la zone de porte
+  // ==============================================================
+  const promptEl = document.getElementById('prompt');
+  let nearDoorId = null; // id de la maison devant laquelle on se trouve
+
+  function updatePrompt(){
+    if(nearDoorId){
+      promptEl.style.display = 'block';
+    } else {
+      promptEl.style.display = 'none';
+    }
+  }
+
+  window.addEventListener('keydown', (e)=>{
+    if(e.key.toLowerCase() === 'e' && nearDoorId){
+      const target = CONFIG.links.map[nearDoorId] || `house-${nearDoorId}.html`;
+      // Navigation vers la page de la maison (à créer par vos soins)
+      window.location.href = target;
+    }
+  });
+
+  // ==============================================================
+  // Boucle de rendu
+  // ==============================================================
+  function draw(){
+    // Fond
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // Sol doux en dégradés (violet déjà en CSS, on ajoute un halo central)
+    const g = ctx.createRadialGradient(CONFIG.center.x, CONFIG.center.y, 10, CONFIG.center.x, CONFIG.center.y, CONFIG.circleRadius*1.4);
+    g.addColorStop(0, 'rgba(255,255,255,.08)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    // Maisons
+    for(const h of HOUSES) drawHouse(h);
+
+    // Joueur
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.r, 0, TAU);
+    ctx.fillStyle = CONFIG.player.color; ctx.fill();
+    ctx.lineWidth = 2; ctx.strokeStyle = CONFIG.player.outline; ctx.stroke();
+
+    // Ombre du joueur
+    ctx.globalAlpha = .35;
+    ctx.beginPath(); ctx.ellipse(player.x, player.y + player.r * .6, player.r * 1.1, player.r*.45, 0, 0, TAU);
+    ctx.fillStyle = '#000'; ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // UI légère (titre)
+    ctx.font = '600 14px system-ui, -apple-system, Segoe UI, Roboto, Arial';
+    ctx.fillStyle = 'rgba(255,255,255,.85)';
+    ctx.textAlign = 'center';
+    ctx.fillText('Village circulaire — Démo', CONFIG.world.width/2, 24);
+  }
+
+  function loop(){
+    const next = tryMove(player.x, player.y);
+    player.x = next.x; player.y = next.y;
+
+    // Détection porte proche
+    nearDoorId = null;
+    for(const h of HOUSES){
+      const d = doorRect(h);
+      const near = circleRectCollide(player.x, player.y, player.r, d.x-2, d.y-2, d.w+4, d.h+4);
+      if(near){ nearDoorId = h.id; break; }
+    }
+    updatePrompt();
+
+    draw();
+    requestAnimationFrame(loop);
+  }
+  loop();
+
+  // Rendez le canvas focusable pour les claviers uniquement si nécessaire
+  canvas.tabIndex = 0;
+  canvas.addEventListener('click', ()=> canvas.focus());
+  canvas.focus();
+
+  </script>
 </body>
 </html>

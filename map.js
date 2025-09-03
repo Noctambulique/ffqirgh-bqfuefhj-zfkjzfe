@@ -9,7 +9,7 @@ canvas.height = 600;
 
 // --- Images des bâtiments ---
 const buildingFiles = [
-  "DETECTIVE.png",
+  "http://www.image-heberg.fr/files/17569293553633849300.png",
   "JEUVIDEO.png",
   "ARCHIVE.png",
   "MUSEE.png",

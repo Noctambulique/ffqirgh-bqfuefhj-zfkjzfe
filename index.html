@@ -6,7 +6,6 @@
   <title>Accès Bloqué — Village</title>
   <style>
     :root {
-      --violet: #6b2fb3;
       --ui: #ffffff;
       --ui-shadow: rgba(0,0,0,.35);
     }
@@ -77,11 +76,8 @@
     /* --- Map village --- */
     .wrap { display: none; place-items: center; height: 100%; }
     canvas {
-      background: radial-gradient(1200px 800px at center, rgba(255,255,255,.06), rgba(255,255,255,0) 60%), var(--violet);
-      box-shadow: 0 20px 60px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.08);
       border-radius: 16px;
-      /* Retiré le rendu pixelisé */
-      image-rendering: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.08);
       max-width: 96vw;
       max-height: 92vh;
     }
@@ -182,7 +178,12 @@
 
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingEnabled = true; // améliore la qualité
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+
+  // --- Fond perso (change l’URL ici si tu veux ton image en fond) ---
+  const background = new Image();
+  background.src = "https://picsum.photos/960/600?blur=2"; // exemple: fond temporaire
 
   const promptEl = document.getElementById("prompt");
   const TAU = Math.PI * 2;
@@ -230,8 +231,16 @@
 
   function drawHouse(h){
     if(h.img.complete){
-      // dessine en haute qualité
-      ctx.drawImage(h.img, h.x-h.w/2, h.y-h.h/2, h.w, h.h);
+      const aspect = h.img.width / h.img.height;
+      let drawW, drawH;
+      if(aspect >= 1){
+        drawW = h.w;
+        drawH = h.w / aspect;
+      } else {
+        drawH = h.h;
+        drawW = h.h * aspect;
+      }
+      ctx.drawImage(h.img, h.x-drawW/2, h.y-drawH/2, drawW, drawH);
     } else {
       ctx.save();
       ctx.fillStyle='rgba(255,255,255,0.04)';
@@ -244,6 +253,7 @@
 
   function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
+    if(background.complete) ctx.drawImage(background,0,0,canvas.width,canvas.height);
     for(const h of HOUSES) drawHouse(h);
     ctx.beginPath();
     ctx.arc(player.x,player.y,player.r,0,TAU);

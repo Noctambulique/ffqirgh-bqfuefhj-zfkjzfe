@@ -6,7 +6,8 @@
   <title>Accès Bloqué — Village</title>
   <style>
     :root{
-      --violet:#6b2fb3;
+      --violet-city:#8c39e0; /* couleur intérieure ville */
+      --violet-outside:#4b1a7a; /* couleur extérieure ville */
       --ui:#ffffff;
       --ui-shadow: rgba(0,0,0,.35);
     }
@@ -17,7 +18,6 @@
       background:#0d0d0f;
       color:#dcdcdc;
     }
-    /* --- Écran secret --- */
     #lockscreen {
       position:fixed;
       inset:0;
@@ -28,60 +28,25 @@
       align-items:center;
       text-align:center;
     }
-    #lockscreen h1 {
-      font-size:2rem;
-      margin-bottom:1rem;
-      letter-spacing:2px;
-      text-shadow:0 0 10px rgba(255,255,255,.25);
-    }
-    #lockscreen p {
-      margin-bottom:1rem;
-      font-size:1rem;
-      opacity:.85;
-    }
+    #lockscreen h1 { font-size:2rem; margin-bottom:1rem; letter-spacing:2px; text-shadow:0 0 10px rgba(255,255,255,.25);}
+    #lockscreen p {margin-bottom:1rem; font-size:1rem; opacity:.85;}
     #lockscreen input {
-      padding:10px 14px;
-      border:1px solid #444;
-      border-radius:6px;
-      background:#111;
-      color:#eee;
-      font-family:inherit;
-      font-size:1rem;
-      letter-spacing:1px;
-      outline:none;
-      box-shadow:0 0 12px rgba(0,255,150,.3);
+      padding:10px 14px; border:1px solid #444; border-radius:6px;
+      background:#111; color:#eee; font-family:inherit; font-size:1rem;
+      letter-spacing:1px; outline:none; box-shadow:0 0 12px rgba(0,255,150,.3);
       text-align:center;
     }
     #lockscreen button {
-      margin-top:1rem;
-      padding:10px 20px;
-      background:#111;
-      border:1px solid #0f0;
-      color:#0f0;
-      font-family:inherit;
-      font-size:1rem;
-      border-radius:6px;
-      cursor:pointer;
-      transition:all .2s;
+      margin-top:1rem; padding:10px 20px; background:#111; border:1px solid #0f0;
+      color:#0f0; font-family:inherit; font-size:1rem; border-radius:6px; cursor:pointer; transition:all .2s;
     }
-    #lockscreen button:hover {
-      background:#0f0;
-      color:#000;
-    }
-    #error {
-      margin-top:1rem;
-      color:#f55;
-      display:none;
-    }
+    #lockscreen button:hover { background:#0f0; color:#000;}
+    #error { margin-top:1rem; color:#f55; display:none; }
 
-    /* --- Map village --- */
     .wrap{ display:none; place-items:center; height:100%; }
     canvas{ 
       box-shadow: 0 20px 60px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.08);
-      border-radius: 16px;
-      image-rendering: pixelated;
-      max-width: 96vw;
-      max-height: 92vh;
+      border-radius: 16px; image-rendering: pixelated; max-width: 96vw; max-height: 92vh;
     }
     .hud{
       position: fixed; inset: 16px auto auto 16px; color: var(--ui);
@@ -89,10 +54,8 @@
       user-select:none; font-size:14px; line-height:1.25;
     }
     .hud kbd{
-      background: rgba(255,255,255,.18);
-      border: 1px solid rgba(255,255,255,.35);
-      padding: 2px 6px; border-radius: 6px;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.35);
+      background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.35);
+      padding: 2px 6px; border-radius: 6px; box-shadow: inset 0 1px 0 rgba(255,255,255,.35);
       margin-right:4px;
     }
     .prompt{
@@ -105,206 +68,181 @@
   </style>
 </head>
 <body>
-  <!-- Écran secret -->
-  <div id="lockscreen">
-    <h1>🔎Système de Vérification</h1>
-    <p>Entrez le mot de passe pour accéder à Naos :</p>
-    <input type="password" id="code" placeholder="Mot de passe" aria-label="Mot de passe" />
-    <button id="enterBtn">Entrer</button>
-    <div id="error">❌ Code incorrect...</div>
-  </div>
+<div id="lockscreen">
+  <h1>🔎Système de Vérification</h1>
+  <p>Entrez le mot de passe pour accéder à Naos :</p>
+  <input type="password" id="code" placeholder="Mot de passe" aria-label="Mot de passe" />
+  <button id="enterBtn">Entrer</button>
+  <div id="error">❌ Code incorrect...</div>
+</div>
 
-  <!-- Village -->
-  <div class="wrap">
-    <canvas id="game" width="960" height="600" aria-label="Village heptagonal"></canvas>
-  </div>
-  <div class="hud" aria-hidden="true">
-    <div><strong>Déplacements</strong> <kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd> ou <kbd>Flèches</kbd></div>
-    <div><strong>Entrer</strong> <kbd>E</kbd> quand vous êtes devant une maison</div>
-  </div>
-  <div id="prompt" class="prompt" role="status" aria-live="polite">Appuyez sur <kbd>E</kbd> pour entrer</div>
+<div class="wrap">
+  <canvas id="game" width="960" height="600" aria-label="Village heptagonal"></canvas>
+</div>
+<div class="hud" aria-hidden="true">
+  <div><strong>Déplacements</strong> <kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd> ou <kbd>Flèches</kbd></div>
+  <div><strong>Entrer</strong> <kbd>E</kbd> quand vous êtes devant une maison</div>
+</div>
+<div id="prompt" class="prompt" role="status" aria-live="polite">Appuyez sur <kbd>E</kbd> pour entrer</div>
 
-  <script>
-  // --- Écran secret ---
-  function checkCode(){
-    const input=document.getElementById("code").value.trim();
-    const errorEl=document.getElementById('error');
-    if(input==="Noctambule"){
-      document.getElementById("lockscreen").style.display="none";
-      document.querySelector(".wrap").style.display="grid";
-      errorEl.style.display='none';
-    } else {
-      errorEl.style.display="block";
-    }
+<script>
+function checkCode(){
+  const input=document.getElementById("code").value.trim();
+  const errorEl=document.getElementById('error');
+  if(input==="Noctambule"){
+    document.getElementById("lockscreen").style.display="none";
+    document.querySelector(".wrap").style.display="grid";
+    errorEl.style.display='none';
+  } else { errorEl.style.display="block"; }
+}
+document.getElementById('enterBtn').addEventListener('click', checkCode);
+document.getElementById('code').addEventListener('keydown', function(e){ if(e.key==='Enter') checkCode(); });
+
+const CONFIG = {
+  world: { width: 960, height: 600 },
+  center: { x: 480, y: 300 },
+  houseCount: 9,
+  house: { size: 80 },
+  player: { size:16, color:'#ffd166', outline:'rgba(0,0,0,.45)', speed:2.6, start:{x:480,y:300} },
+  links:{ map: { 1:"http://www.image-heberg.fr/files/17570045253321247512.png", 2:"Musique$=.png",
+                 3:"Image1.jpg",4:"film.png",5:"Power Point Ultime +.pdf",6:"jeu.png",
+                 7:"Philosophie (version 1) (version 1).xlsx",8:"http://www.image-heberg.fr/files/17570013711904017684.png",
+                 9:"http://www.image-heberg.fr/files/17570018873343452500.png"} }
+};
+
+const HOUSE_IMAGES = [
+  "http://www.image-heberg.fr/files/1756932846977872901.png",
+  "http://www.image-heberg.fr/files/17569327082239331138.png",
+  "http://www.image-heberg.fr/files/17569329301273083581.png",
+  "http://www.image-heberg.fr/files/17569325061444124555.png",
+  "http://www.image-heberg.fr/files/17569293553633849300.png",
+  "http://www.image-heberg.fr/files/17569333324150026336.png",
+  "http://www.image-heberg.fr/files/17569320932872336291.png",
+  "http://www.image-heberg.fr/files/17569316144126423008.png",
+  "http://www.image-heberg.fr/files/17570037951807174458.png"
+];
+
+const canvas=document.getElementById('game');
+const ctx=canvas.getContext('2d');
+const promptEl=document.getElementById("prompt");
+const TAU=Math.PI*2;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+const HEPTAGON_SIDES=7;
+const CITY_RADIUS=250;
+
+function generateHousesHeptagon(){
+  const houses=[];
+  const {x:cx,y:cy}=CONFIG.center;
+  for(let i=0;i<CONFIG.houseCount;i++){
+    const angle=(i/CONFIG.houseCount)*TAU-Math.PI/2;
+    const radius=CITY_RADIUS-40; // un peu moins collé au bord
+    const hx=cx+Math.cos(angle)*radius;
+    const hy=cy+Math.sin(angle)*radius;
+    const img=new Image(); img.src=HOUSE_IMAGES[i%HOUSE_IMAGES.length];
+    houses.push({id:i+1,x:hx,y:hy,w:CONFIG.house.size,h:CONFIG.house.size,img});
   }
-  document.getElementById('enterBtn').addEventListener('click', checkCode);
-  document.getElementById('code').addEventListener('keydown', function(e){ if(e.key==='Enter') checkCode(); });
+  return houses;
+}
 
-  // --- Configuration village ---
-  const CONFIG = {
-    world: { width: 960, height: 600 },
-    center: { x: 480, y: 300 },
-    houseCount: 9,
-    house: { size: 80 },
-    player: {
-      size: 16, color: '#ffd166',
-      outline: 'rgba(0,0,0,.45)',
-      speed: 2.6,
-      start: { x: 480, y: 300 },
-    },
-    links: { map: {
-      1: "http://www.image-heberg.fr/files/17570045253321247512.png",
-      2: "Musique$=.png",
-      3: "Image1.jpg",
-      4: "film.png",
-      5: "Power Point Ultime +.pdf",
-      6: "jeu.png",
-      7: "Philosophie (version 1) (version 1).xlsx",
-      8: "http://www.image-heberg.fr/files/17570013711904017684.png",
-      9: "http://www.image-heberg.fr/files/17570018873343452500.png"
-    }}
-  };
+const HOUSES=generateHousesHeptagon();
+const keys=new Set();
+const player={x:CONFIG.player.start.x,y:CONFIG.player.start.y,r:CONFIG.player.size};
 
-  const HOUSE_IMAGES = [
-    "http://www.image-heberg.fr/files/1756932846977872901.png",
-    "http://www.image-heberg.fr/files/17569327082239331138.png",
-    "http://www.image-heberg.fr/files/17569329301273083581.png",
-    "http://www.image-heberg.fr/files/17569325061444124555.png",
-    "http://www.image-heberg.fr/files/17569293553633849300.png",
-    "http://www.image-heberg.fr/files/17569333324150026336.png",
-    "http://www.image-heberg.fr/files/17569320932872336291.png",
-    "http://www.image-heberg.fr/files/17569316144126423008.png",
-    "http://www.image-heberg.fr/files/17570037951807174458.png"
-  ];
+window.addEventListener('keydown',e=>{
+  const k=e.key.toLowerCase();
+  const movementKeys=['z','q','s','d','arrowup','arrowdown','arrowleft','arrowright'];
+  if(movementKeys.includes(k)) e.preventDefault();
+  keys.add(k);
+});
+window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
 
-  const canvas = document.getElementById('game');
-  const ctx = canvas.getContext('2d');
-  const promptEl = document.getElementById("prompt");
-  const TAU = Math.PI*2;
-  const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+function tryMove(px,py){
+  let dx=0,dy=0;
+  if(keys.has('z')||keys.has('arrowup')) dy-=1;
+  if(keys.has('s')||keys.has('arrowdown')) dy+=1;
+  if(keys.has('q')||keys.has('arrowleft')) dx-=1;
+  if(keys.has('d')||keys.has('arrowright')) dx+=1;
+  const len=Math.hypot(dx,dy)||1;
+  dx=dx/len*CONFIG.player.speed;
+  dy=dy/len*CONFIG.player.speed;
+  return {x:clamp(px+dx,player.r,CONFIG.world.width-player.r), y:clamp(py+dy,player.r,CONFIG.world.height-player.r)};
+}
 
-  const HEPTAGON_SIDES = 7;
-  const CITY_RADIUS = 250; // rayon plus large pour la ville
-
-  // Génération des maisons le long du contour du heptagone
-  function generateHousesHeptagon() {
-    const houses = [];
-    const { x: cx, y: cy } = CONFIG.center;
-    for (let i = 0; i < CONFIG.houseCount; i++) {
-      const angle = (i / CONFIG.houseCount) * TAU - Math.PI/2;
-      const radius = CITY_RADIUS - CONFIG.house.size/2 - 10;
-      const hx = cx + Math.cos(angle) * radius;
-      const hy = cy + Math.sin(angle) * radius;
-      const img = new Image();
-      img.src = HOUSE_IMAGES[i % HOUSE_IMAGES.length];
-      houses.push({ id: i+1, x: hx, y: hy, w: CONFIG.house.size, h: CONFIG.house.size, img });
-    }
-    return houses;
+function drawHouse(h){
+  if(!h.img.complete){
+    ctx.save();
+    ctx.fillStyle='rgba(255,255,255,0.04)';
+    ctx.fillRect(h.x-h.w/2,h.y-h.h/2,h.w,h.h);
+    ctx.strokeStyle='rgba(0,0,0,0.25)';
+    ctx.strokeRect(h.x-h.w/2,h.y-h.h/2,h.w,h.h);
+    ctx.restore();
   }
+  ctx.drawImage(h.img,h.x-h.w/2,h.y-h.h/2,h.w,h.h);
+}
 
-  const HOUSES = generateHousesHeptagon();
-  const keys = new Set();
-  const player={x:CONFIG.player.start.x,y:CONFIG.player.start.y,r:CONFIG.player.size};
+function drawCity(){
+  // Fond extérieur
+  ctx.fillStyle='var(--violet-outside)';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
 
-  window.addEventListener('keydown', e=>{
-    const k = e.key.toLowerCase();
-    const movementKeys=['z','q','s','d','arrowup','arrowdown','arrowleft','arrowright'];
-    if(movementKeys.includes(k)) e.preventDefault();
-    keys.add(k);
-  });
-  window.addEventListener('keyup', e=>keys.delete(e.key.toLowerCase()));
-
-  function tryMove(px,py){
-    let dx=0,dy=0;
-    if(keys.has('z')||keys.has('arrowup')) dy-=1;
-    if(keys.has('s')||keys.has('arrowdown')) dy+=1;
-    if(keys.has('q')||keys.has('arrowleft')) dx-=1;
-    if(keys.has('d')||keys.has('arrowright')) dx+=1;
-    const len=Math.hypot(dx,dy)||1;
-    dx=dx/len*CONFIG.player.speed;
-    dy=dy/len*CONFIG.player.speed;
-    return {x:clamp(px+dx,player.r,CONFIG.world.width-player.r), y:clamp(py+dy,player.r,CONFIG.world.height-player.r)};
+  // Heptagone intérieur
+  const {x:cx,y:cy}=CONFIG.center;
+  ctx.beginPath();
+  for(let i=0;i<=HEPTAGON_SIDES;i++){
+    const angle=(i/HEPTAGON_SIDES)*TAU-Math.PI/2;
+    const x=cx+Math.cos(angle)*CITY_RADIUS;
+    const y=cy+Math.sin(angle)*CITY_RADIUS;
+    if(i===0) ctx.moveTo(x,y);
+    else ctx.lineTo(x,y);
   }
+  ctx.closePath();
+  ctx.fillStyle='var(--violet-city)';
+  ctx.fill();
+  ctx.lineWidth=4;
+  ctx.strokeStyle='#fff5';
+  ctx.stroke();
+}
 
-  function drawHouse(h){
-    if(!h.img.complete){
-      ctx.save();
-      ctx.fillStyle='rgba(255,255,255,0.04)';
-      ctx.fillRect(h.x-h.w/2, h.y-h.h/2, h.w, h.h);
-      ctx.strokeStyle='rgba(0,0,0,0.25)';
-      ctx.strokeRect(h.x-h.w/2, h.y-h.h/2, h.w, h.h);
-      ctx.restore();
-    }
-    ctx.drawImage(h.img,h.x-h.w/2,h.y-h.h/2,h.w,h.h);
+function draw(){
+  drawCity();
+  for(const h of HOUSES) drawHouse(h);
+  ctx.beginPath();
+  ctx.arc(player.x,player.y,player.r,0,TAU);
+  ctx.fillStyle=CONFIG.player.color; ctx.fill();
+  ctx.lineWidth=2; ctx.strokeStyle=CONFIG.player.outline; ctx.stroke();
+}
+
+function getNearbyHouse(){
+  let nearest=null,bestDist=Infinity;
+  for(const h of HOUSES){
+    const dist=Math.hypot(player.x-h.x,player.y-h.y);
+    if(dist<bestDist){ bestDist=dist; nearest=h; }
   }
+  if(bestDist<CONFIG.house.size*0.6) return nearest;
+  return null;
+}
 
-  function drawCity() {
-    // Fond violet foncé
-    ctx.fillStyle = '#4b1a7a';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+function updatePrompt(){
+  const h=getNearbyHouse();
+  if(h && CONFIG.links.map[h.id]) promptEl.style.display='block';
+  else promptEl.style.display='none';
+}
 
-    const { x: cx, y: cy } = CONFIG.center;
-    ctx.beginPath();
-    for (let i = 0; i <= HEPTAGON_SIDES; i++) {
-      const angle = (i / HEPTAGON_SIDES) * TAU - Math.PI/2;
-      const x = cx + Math.cos(angle) * CITY_RADIUS;
-      const y = cy + Math.sin(angle) * CITY_RADIUS;
-      if(i===0) ctx.moveTo(x,y);
-      else ctx.lineTo(x,y);
-    }
-    ctx.closePath();
-    ctx.fillStyle = 'var(--violet)';
-    ctx.fill();
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = '#fff5';
-    ctx.stroke();
-  }
-
-  function draw() {
-    drawCity();
-    for(const h of HOUSES) drawHouse(h);
-    ctx.beginPath();
-    ctx.arc(player.x,player.y,player.r,0,TAU);
-    ctx.fillStyle = CONFIG.player.color; ctx.fill();
-    ctx.lineWidth = 2; ctx.strokeStyle = CONFIG.player.outline; ctx.stroke();
-  }
-
-  function getNearbyHouse(){
-    let nearest=null;
-    let bestDist=Infinity;
-    for(const h of HOUSES){
-      const dist=Math.hypot(player.x-h.x,player.y-h.y);
-      if(dist<bestDist){ bestDist=dist; nearest=h; }
-    }
-    if(bestDist < CONFIG.house.size * 0.6) return nearest;
-    return null;
-  }
-
-  function updatePrompt(){
+window.addEventListener("keydown",e=>{
+  if(e.key.toLowerCase()==="e"){
     const h=getNearbyHouse();
-    if(h && CONFIG.links.map[h.id]){
-      promptEl.style.display='block';
-    } else {
-      promptEl.style.display='none';
-    }
+    if(h && CONFIG.links.map[h.id]) window.location.href=CONFIG.links.map[h.id];
   }
+});
 
-  window.addEventListener("keydown", e=>{
-    if(e.key.toLowerCase()==="e"){
-      const h=getNearbyHouse();
-      if(h && CONFIG.links.map[h.id]){
-        window.location.href = CONFIG.links.map[h.id];
-      }
-    }
-  });
-
-  function loop(){
-    const next=tryMove(player.x,player.y);
-    player.x=next.x; player.y=next.y;
-    draw(); updatePrompt();
-    requestAnimationFrame(loop);
-  }
-  loop();
-  </script>
+function loop(){
+  const next=tryMove(player.x,player.y);
+  player.x=next.x; player.y=next.y;
+  draw(); updatePrompt();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
 </body>
 </html>

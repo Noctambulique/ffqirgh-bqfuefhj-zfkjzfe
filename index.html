@@ -1,131 +1,4 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Accès Bloqué </title>
-  <style>
-    :root{
-      --violet:#6b2fb3;
-      --ui:#ffffff;
-      --ui-shadow: rgba(0,0,0,.35);
-    }
-    html,body{
-      height:100%;
-      margin:0;
-      font-family: "Courier New", monospace;
-      background:#0d0d0f;
-      color:#dcdcdc;
-    }
-    /* --- Écran secret --- */
-    #lockscreen {
-      position:fixed;
-      inset:0;
-      background:radial-gradient(circle at center, #1a1a20 0%, #000 100%);
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      align-items:center;
-      text-align:center;
-    }
-    #lockscreen h1 {
-      font-size:2rem;
-      margin-bottom:1rem;
-      letter-spacing:2px;
-      text-shadow:0 0 10px rgba(255,255,255,.25);
-    }
-    #lockscreen p {
-      margin-bottom:1rem;
-      font-size:1rem;
-      opacity:.85;
-    }
-    #lockscreen input {
-      padding:10px 14px;
-      border:1px solid #444;
-      border-radius:6px;
-      background:#111;
-      color:#eee;
-      font-family:inherit;
-      font-size:1rem;
-      letter-spacing:1px;
-      outline:none;
-      box-shadow:0 0 12px rgba(0,255,150,.3);
-      text-align:center;
-    }
-    #lockscreen button {
-      margin-top:1rem;
-      padding:10px 20px;
-      background:#111;
-      border:1px solid #0f0;
-      color:#0f0;
-      font-family:inherit;
-      font-size:1rem;
-      border-radius:6px;
-      cursor:pointer;
-      transition:all .2s;
-    }
-    #lockscreen button:hover {
-      background:#0f0;
-      color:#000;
-    }
-    #error {
-      margin-top:1rem;
-      color:#f55;
-      display:none;
-    }
-
-    /* --- Map village --- */
-    .wrap{ display:none; place-items:center; height:100%; }
-    canvas{ 
-      background: radial-gradient(1200px 800px at center, rgba(255,255,255,.06), rgba(255,255,255,0) 60%), var(--violet);
-      box-shadow: 0 20px 60px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.08);
-      border-radius: 16px;
-      image-rendering: pixelated;
-      max-width: 96vw;
-      max-height: 92vh;
-    }
-    .hud{
-      position: fixed; inset: 16px auto auto 16px; color: var(--ui);
-      text-shadow: 0 2px 6px var(--ui-shadow);
-      user-select:none; font-size:14px; line-height:1.25;
-    }
-    .hud kbd{
-      background: rgba(255,255,255,.18);
-      border: 1px solid rgba(255,255,255,.35);
-      padding: 2px 6px; border-radius: 6px;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.35);
-      margin-right:4px;
-    }
-    .prompt{
-      position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
-      color: var(--ui); font-weight: 600; letter-spacing:.2px;
-      padding: 8px 12px; border-radius: 10px;
-      background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.35);
-      display:none; white-space:nowrap; text-shadow:0 2px 6px var(--ui-shadow);
-    }
-  </style>
-</head>
-<body>
-  <!-- Écran secret -->
-  <div id="lockscreen">
-    <h1>🔎Système de Vérification</h1>
-    <p>Entrez le mot de passe pour accèder à Naos :</p>
-    <input type="password" id="code" placeholder="Mot de passe" />
-    <button onclick="checkCode()">Entrer</button>
-    <div id="error">❌ Code incorrect...</div>
-  </div>
-
-  <!-- Village -->
-  <div class="wrap">
-    <canvas id="game" width="960" height="600" aria-label="Village circulaire"></canvas>
-  </div>
-  <div class="hud" aria-hidden="true">
-    <div><strong>Déplacements</strong> <kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd> ou <kbd>Flèches</kbd></div>
-    <div><strong>Entrer</strong> <kbd>E</kbd> quand vous êtes devant une maison</div>
-  </div>
-  <div id="prompt" class="prompt">Appuyez sur <kbd>E</kbd> pour entrer</div>
-
-  <script>
+<script>
   // --- Écran secret ---
   function checkCode(){
     const input=document.getElementById("code").value.trim();
@@ -142,7 +15,7 @@
     world: { width: 960, height: 600 },
     center: { x: 480, y: 300 },
     circleRadius: 200,
-    houseCount: 8,
+    houseCount: 9,   // ✅ On passe à 9 maisons
     house: { size: 80 },
     player: {
       size: 16, color: '#ffd166',
@@ -158,7 +31,8 @@
       5: "Power Point Ultime +.pdf",
       6: "jeu.png",
       7: "Philosophie (version 1) (version 1).xlsx",
-      8: "docs/maison8.xlsx"
+      8: "docs/maison8.xlsx",
+      9: "docs/maison9.pdf"   // ✅ Nouveau lien pour ta 9ᵉ maison
     }}
   };
 
@@ -170,8 +44,12 @@
     "http://www.image-heberg.fr/files/17569293553633849300.png",
     "http://www.image-heberg.fr/files/17569333324150026336.png",
     "http://www.image-heberg.fr/files/17569320932872336291.png",
-    "http://www.image-heberg.fr/files/17569316144126423008.png"
+    "http://www.image-heberg.fr/files/17569316144126423008.png",
+    "http://www.image-heberg.fr/files/17569335000000000000.png" // ✅ Ajoute ton image de maison9 ici
   ];
+
+</script>
+
 
   const canvas=document.getElementById('game');
   const ctx=canvas.getContext('2d');

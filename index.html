@@ -142,14 +142,16 @@
   const CONFIG = {
     world: { width: 960, height: 600 },
     center: { x: 480, y: 300 },
-    circleRadius: 170,
+    circleRadius: 170, // maisons un peu plus proches du centre
     houseCount: 9,
     house: { size: 80 },
     player: {
-      size: 16, color: '#ffd166',
+      size: 32, // taille du sprite
+      color: '#ffd166',
       outline: 'rgba(0,0,0,.45)',
       speed: 2.6,
       start: { x: 480, y: 300 },
+      image: "http://www.image-heberg.fr/files/17570217122216427613.png" // <-- change l’URL ici pour ton perso
     },
     links: { map: {
       1: "http://www.image-heberg.fr/files/17570045253321247512.png",
@@ -181,14 +183,19 @@
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
 
-  // --- Fond perso (change l’URL ici si tu veux ton image en fond) ---
+  // --- Fond ---
   const background = new Image();
-  background.src = "http://www.image-heberg.fr/files/17570202861364445094.png"; // exemple: fond temporaire
+  background.src = "http://www.image-heberg.fr/files/17570213431743313302.png";
 
-  const promptEl = document.getElementById("prompt");
+  // --- Joueur ---
+  const playerImg = new Image();
+  playerImg.src = CONFIG.player.image;
+
+  const player = {x:CONFIG.player.start.x,y:CONFIG.player.start.y,r:CONFIG.player.size};
+
+  // --- Maisons ---
   const TAU = Math.PI * 2;
   const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
-
   function generateHouses(){
     const houses=[];
     const {x:cx,y:cy}=CONFIG.center;
@@ -203,8 +210,9 @@
     }
     return houses;
   }
-
   const HOUSES = generateHouses();
+
+  // --- Contrôles ---
   const keys = new Set();
   window.addEventListener('keydown', e => {
     const k = e.key.toLowerCase();
@@ -213,8 +221,6 @@
     keys.add(k);
   });
   window.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
-
-  const player = {x:CONFIG.player.start.x,y:CONFIG.player.start.y,r:CONFIG.player.size};
 
   function tryMove(px,py){
     let dx=0,dy=0;
@@ -241,13 +247,17 @@
         drawW = h.h * aspect;
       }
       ctx.drawImage(h.img, h.x-drawW/2, h.y-drawH/2, drawW, drawH);
+    }
+  }
+
+  function drawPlayer(){
+    if (playerImg.complete && playerImg.naturalWidth > 0) {
+      ctx.drawImage(playerImg, player.x-player.r, player.y-player.r, player.r*2, player.r*2);
     } else {
-      ctx.save();
-      ctx.fillStyle='rgba(255,255,255,0.04)';
-      ctx.fillRect(h.x-h.w/2, h.y-h.h/2, h.w, h.h);
-      ctx.strokeStyle='rgba(0,0,0,0.25)';
-      ctx.strokeRect(h.x-h.w/2, h.y-h.h/2, h.w, h.h);
-      ctx.restore();
+      ctx.beginPath();
+      ctx.arc(player.x, player.y, player.r, 0, TAU);
+      ctx.fillStyle = CONFIG.player.color; ctx.fill();
+      ctx.lineWidth = 2; ctx.strokeStyle = CONFIG.player.outline; ctx.stroke();
     }
   }
 
@@ -255,10 +265,7 @@
     ctx.clearRect(0,0,canvas.width,canvas.height);
     if(background.complete) ctx.drawImage(background,0,0,canvas.width,canvas.height);
     for(const h of HOUSES) drawHouse(h);
-    ctx.beginPath();
-    ctx.arc(player.x,player.y,player.r,0,TAU);
-    ctx.fillStyle=CONFIG.player.color; ctx.fill();
-    ctx.lineWidth=2; ctx.strokeStyle=CONFIG.player.outline; ctx.stroke();
+    drawPlayer();
   }
 
   function getNearbyHouse(){
@@ -271,6 +278,7 @@
     return null;
   }
 
+  const promptEl = document.getElementById("prompt");
   function updatePrompt(){
     const h=getNearbyHouse();
     if(h && CONFIG.links.map[h.id]){

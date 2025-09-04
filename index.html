@@ -7,6 +7,7 @@
   <style>
     :root{
       --violet:#6b2fb3;
+      --bordeaux:#800000;
       --ui:#ffffff;
       --ui-shadow: rgba(0,0,0,.35);
     }
@@ -77,7 +78,6 @@
     /* --- Map village --- */
     .wrap{ display:none; place-items:center; height:100%; }
     canvas{ 
-      background: radial-gradient(1200px 800px at center, rgba(255,255,255,.06), rgba(255,255,255,0) 60%), var(--violet);
       box-shadow: 0 20px 60px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.08);
       border-radius: 16px;
       image-rendering: pixelated;
@@ -117,7 +117,7 @@
 
   <!-- Village -->
   <div class="wrap">
-    <canvas id="game" width="960" height="600" aria-label="Village circulaire"></canvas>
+    <canvas id="game" width="960" height="600" aria-label="Village heptagonal"></canvas>
   </div>
   <div class="hud" aria-hidden="true">
     <div><strong>Déplacements</strong> <kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd> ou <kbd>Flèches</kbd></div>
@@ -146,7 +146,7 @@
     world: { width: 960, height: 600 },
     center: { x: 480, y: 300 },
     circleRadius: 200,
-    houseCount: 9, // <-- 9 maisons (vous pouvez revenir à 8 si besoin)
+    houseCount: 9,
     house: { size: 80 },
     player: {
       size: 16, color: '#ffd166',
@@ -167,7 +167,6 @@
     }}
   };
 
-  // Images des maisons (remplacez les URLs par vos images si nécessaire)
   const HOUSE_IMAGES = [
     "http://www.image-heberg.fr/files/1756932846977872901.png",
     "http://www.image-heberg.fr/files/17569327082239331138.png",
@@ -177,7 +176,7 @@
     "http://www.image-heberg.fr/files/17569333324150026336.png",
     "http://www.image-heberg.fr/files/17569320932872336291.png",
     "http://www.image-heberg.fr/files/17569316144126423008.png",
-    "http://www.image-heberg.fr/files/17570037951807174458.png" // image 9 (remplacez par la vôtre)
+    "http://www.image-heberg.fr/files/17570037951807174458.png"
   ];
 
   const canvas=document.getElementById('game');
@@ -186,6 +185,7 @@
   const TAU=Math.PI*2;
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
+  // --- Génération des maisons ---
   function generateHouses(){
     const houses=[];
     const {x:cx,y:cy}=CONFIG.center;
@@ -203,8 +203,46 @@
 
   const HOUSES=generateHouses();
   const keys=new Set();
+  const player={x:CONFIG.player.start.x,y:CONFIG.player.start.y,r:CONFIG.player.size};
 
-  // Gestion du clavier : mouvements + bloquer le scroll quand on utilise les touches de jeu
+  // --- Heptagone et fond ---
+  function drawHeptagon(cx, cy, radius, fillInside, fillOutside) {
+    const sides = 7;
+    const angleStep = (2 * Math.PI) / sides;
+    const points = [];
+    for (let i = 0; i < sides; i++) {
+      const angle = angleStep * i - Math.PI / 2;
+      points.push({ x: cx + Math.cos(angle)*radius, y: cy + Math.sin(angle)*radius });
+    }
+
+    // extérieur bordeaux
+    ctx.save();
+    ctx.fillStyle = fillOutside;
+    ctx.beginPath();
+    ctx.moveTo(0,0);
+    ctx.lineTo(canvas.width,0);
+    ctx.lineTo(canvas.width,canvas.height);
+    ctx.lineTo(0,canvas.height);
+    ctx.closePath();
+
+    ctx.moveTo(points[0].x, points[0].y);
+    for(let p of points.slice(1)) ctx.lineTo(p.x,p.y);
+    ctx.closePath();
+    ctx.fill('evenodd');
+    ctx.restore();
+
+    // intérieur violet
+    ctx.save();
+    ctx.fillStyle = fillInside;
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for(let p of points.slice(1)) ctx.lineTo(p.x,p.y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // --- Gestion clavier ---
   window.addEventListener('keydown', e=>{
     const k=e.key.toLowerCase();
     const movementKeys=['z','q','s','d','arrowup','arrowdown','arrowleft','arrowright'];
@@ -212,8 +250,6 @@
     keys.add(k);
   });
   window.addEventListener('keyup', e=>keys.delete(e.key.toLowerCase()));
-
-  const player={x:CONFIG.player.start.x,y:CONFIG.player.start.y,r:CONFIG.player.size};
 
   function tryMove(px,py){
     let dx=0,dy=0;
@@ -228,7 +264,6 @@
   }
 
   function drawHouse(h){
-    // si l'image n'est pas chargée, on dessine un placeholder léger (bord et fond)
     if(!h.img.complete){
       ctx.save();
       ctx.fillStyle='rgba(255,255,255,0.04)';
@@ -242,7 +277,12 @@
 
   function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    drawHeptagon(CONFIG.center.x, CONFIG.center.y, CONFIG.circleRadius + 120,
+                 'var(--violet)', 'var(--bordeaux)');
+
     for(const h of HOUSES) drawHouse(h);
+
     ctx.beginPath();
     ctx.arc(player.x,player.y,player.r,0,TAU);
     ctx.fillStyle=CONFIG.player.color; ctx.fill();
@@ -250,36 +290,25 @@
   }
 
   function getNearbyHouse(){
-    let nearest=null;
-    let bestDist=Infinity;
+    let nearest=null; let bestDist=Infinity;
     for(const h of HOUSES){
       const dist=Math.hypot(player.x-h.x,player.y-h.y);
       if(dist<bestDist){ bestDist=dist; nearest=h; }
     }
-    // seuil d'interaction
     if(bestDist < CONFIG.house.size * 0.6) return nearest;
     return null;
   }
 
   function updatePrompt(){
     const h=getNearbyHouse();
-    if(h && CONFIG.links.map[h.id]){
-      promptEl.style.display='block';
-    } else {
-      promptEl.style.display='none';
-    }
+    if(h && CONFIG.links.map[h.id]) promptEl.style.display='block';
+    else promptEl.style.display='none';
   }
 
-  // Appuyer sur E pour entrer dans la maison proche
   window.addEventListener("keydown", e=>{
     if(e.key.toLowerCase()==="e"){
       const h=getNearbyHouse();
-      if(h && CONFIG.links.map[h.id]){
-        // navigue vers la ressource associée
-        window.location.href = CONFIG.links.map[h.id];
-        // si vous préférez ouvrir dans un nouvel onglet, remplacez la ligne ci‑dessus par :
-        // window.open(CONFIG.links.map[h.id], '_blank');
-      }
+      if(h && CONFIG.links.map[h.id]) window.location.href = CONFIG.links.map[h.id];
     }
   });
 

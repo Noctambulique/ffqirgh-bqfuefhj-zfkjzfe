@@ -1,71 +1,34 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Accès Bloqué — Village</title>
-  <style>
-    :root{
-      --violet-city:#8c39e0; /* couleur intérieure ville */
-      --violet-outside:#4b1a7a; /* couleur extérieure ville */
-      --ui:#ffffff;
-      --ui-shadow: rgba(0,0,0,.35);
-    }
-    html,body{
-      height:100%;
-      margin:0;
-      font-family: "Courier New", monospace;
-      background:#0d0d0f;
-      color:#dcdcdc;
-    }
-    #lockscreen {
-      position:fixed;
-      inset:0;
-      background:radial-gradient(circle at center, #1a1a20 0%, #000 100%);
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      align-items:center;
-      text-align:center;
-    }
-    #lockscreen h1 { font-size:2rem; margin-bottom:1rem; letter-spacing:2px; text-shadow:0 0 10px rgba(255,255,255,.25);}
-    #lockscreen p {margin-bottom:1rem; font-size:1rem; opacity:.85;}
-    #lockscreen input {
-      padding:10px 14px; border:1px solid #444; border-radius:6px;
-      background:#111; color:#eee; font-family:inherit; font-size:1rem;
-      letter-spacing:1px; outline:none; box-shadow:0 0 12px rgba(0,255,150,.3);
-      text-align:center;
-    }
-    #lockscreen button {
-      margin-top:1rem; padding:10px 20px; background:#111; border:1px solid #0f0;
-      color:#0f0; font-family:inherit; font-size:1rem; border-radius:6px; cursor:pointer; transition:all .2s;
-    }
-    #lockscreen button:hover { background:#0f0; color:#000;}
-    #error { margin-top:1rem; color:#f55; display:none; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Village Heptagonal</title>
+<style>
+:root{
+  --violet-city:#8c39e0; 
+  --bordeaux-outside:#7b0000; 
+  --ui:#ffffff;
+  --ui-shadow: rgba(0,0,0,.35);
+}
+html,body{margin:0;height:100%;font-family:"Courier New", monospace;background:#0d0d0f;color:#dcdcdc;}
+#lockscreen{
+  position:fixed; inset:0; background:radial-gradient(circle at center, #1a1a20 0%, #000 100%);
+  display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;
+}
+#lockscreen h1{font-size:2rem;margin-bottom:1rem;letter-spacing:2px;text-shadow:0 0 10px rgba(255,255,255,.25);}
+#lockscreen p{margin-bottom:1rem;font-size:1rem;opacity:.85;}
+#lockscreen input{padding:10px 14px;border:1px solid #444;border-radius:6px;background:#111;color:#eee;font-family:inherit;font-size:1rem;letter-spacing:1px;outline:none;box-shadow:0 0 12px rgba(0,255,150,.3);text-align:center;}
+#lockscreen button{margin-top:1rem;padding:10px 20px;background:#111;border:1px solid #0f0;color:#0f0;font-family:inherit;font-size:1rem;border-radius:6px;cursor:pointer;transition:all .2s;}
+#lockscreen button:hover{background:#0f0;color:#000;}
+#error{margin-top:1rem;color:#f55;display:none;}
 
-    .wrap{ display:none; place-items:center; height:100%; }
-    canvas{ 
-      box-shadow: 0 20px 60px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.08);
-      border-radius: 16px; image-rendering: pixelated; max-width: 96vw; max-height: 92vh;
-    }
-    .hud{
-      position: fixed; inset: 16px auto auto 16px; color: var(--ui);
-      text-shadow: 0 2px 6px var(--ui-shadow);
-      user-select:none; font-size:14px; line-height:1.25;
-    }
-    .hud kbd{
-      background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.35);
-      padding: 2px 6px; border-radius: 6px; box-shadow: inset 0 1px 0 rgba(255,255,255,.35);
-      margin-right:4px;
-    }
-    .prompt{
-      position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
-      color: var(--ui); font-weight: 600; letter-spacing:.2px;
-      padding: 8px 12px; border-radius: 10px;
-      background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.35);
-      display:none; white-space:nowrap; text-shadow:0 2px 6px var(--ui-shadow);
-    }
-  </style>
+.wrap{display:none;place-items:center;height:100%;}
+canvas{box-shadow: 0 20px 60px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.08);border-radius:16px;image-rendering:pixelated;max-width:96vw;max-height:92vh;}
+.hud{position:fixed;inset:16px auto auto 16px;color:var(--ui);text-shadow:0 2px 6px var(--ui-shadow);user-select:none;font-size:14px;line-height:1.25;}
+.hud kbd{background: rgba(255,255,255,.18);border: 1px solid rgba(255,255,255,.35);padding:2px 6px;border-radius:6px;box-shadow:inset 0 1px 0 rgba(255,255,255,.35);margin-right:4px;}
+.prompt{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);color:var(--ui);font-weight:600;letter-spacing:.2px;padding:8px 12px;border-radius:10px;background: rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.35);display:none;white-space:nowrap;text-shadow:0 2px 6px var(--ui-shadow);}
+</style>
 </head>
 <body>
 <div id="lockscreen">
@@ -86,6 +49,7 @@
 <div id="prompt" class="prompt" role="status" aria-live="polite">Appuyez sur <kbd>E</kbd> pour entrer</div>
 
 <script>
+// --- Écran de verrouillage ---
 function checkCode(){
   const input=document.getElementById("code").value.trim();
   const errorEl=document.getElementById('error');
@@ -96,31 +60,11 @@ function checkCode(){
   } else { errorEl.style.display="block"; }
 }
 document.getElementById('enterBtn').addEventListener('click', checkCode);
-document.getElementById('code').addEventListener('keydown', function(e){ if(e.key==='Enter') checkCode(); });
+document.getElementById('code').addEventListener('keydown', e=>{ if(e.key==='Enter') checkCode(); });
 
-const CONFIG = {
-  world: { width: 960, height: 600 },
-  center: { x: 480, y: 300 },
-  houseCount: 9,
-  house: { size: 80 },
-  player: { size:16, color:'#ffd166', outline:'rgba(0,0,0,.45)', speed:2.6, start:{x:480,y:300} },
-  links:{ map: { 1:"http://www.image-heberg.fr/files/17570045253321247512.png", 2:"Musique$=.png",
-                 3:"Image1.jpg",4:"film.png",5:"Power Point Ultime +.pdf",6:"jeu.png",
-                 7:"Philosophie (version 1) (version 1).xlsx",8:"http://www.image-heberg.fr/files/17570013711904017684.png",
-                 9:"http://www.image-heberg.fr/files/17570018873343452500.png"} }
-};
+const CONFIG={world:{width:960,height:600},center:{x:480,y:300},houseCount:9,house:{size:80},player:{size:16,color:'#ffd166',outline:'rgba(0,0,0,.45)',speed:2.6,start:{x:480,y:300}},links:{map:{1:"http://www.image-heberg.fr/files/17570045253321247512.png",2:"Musique$=.png",3:"Image1.jpg",4:"film.png",5:"Power Point Ultime +.pdf",6:"jeu.png",7:"Philosophie (version 1) (version 1).xlsx",8:"http://www.image-heberg.fr/files/17570013711904017684.png",9:"http://www.image-heberg.fr/files/17570018873343452500.png"}}};
 
-const HOUSE_IMAGES = [
-  "http://www.image-heberg.fr/files/1756932846977872901.png",
-  "http://www.image-heberg.fr/files/17569327082239331138.png",
-  "http://www.image-heberg.fr/files/17569329301273083581.png",
-  "http://www.image-heberg.fr/files/17569325061444124555.png",
-  "http://www.image-heberg.fr/files/17569293553633849300.png",
-  "http://www.image-heberg.fr/files/17569333324150026336.png",
-  "http://www.image-heberg.fr/files/17569320932872336291.png",
-  "http://www.image-heberg.fr/files/17569316144126423008.png",
-  "http://www.image-heberg.fr/files/17570037951807174458.png"
-];
+const HOUSE_IMAGES=["http://www.image-heberg.fr/files/1756932846977872901.png","http://www.image-heberg.fr/files/17569327082239331138.png","http://www.image-heberg.fr/files/17569329301273083581.png","http://www.image-heberg.fr/files/17569325061444124555.png","http://www.image-heberg.fr/files/17569293553633849300.png","http://www.image-heberg.fr/files/17569333324150026336.png","http://www.image-heberg.fr/files/17569320932872336291.png","http://www.image-heberg.fr/files/17569316144126423008.png","http://www.image-heberg.fr/files/17570037951807174458.png"];
 
 const canvas=document.getElementById('game');
 const ctx=canvas.getContext('2d');
@@ -131,12 +75,14 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const HEPTAGON_SIDES=7;
 const CITY_RADIUS=250;
 
-function generateHousesHeptagon(){
+// Générer les maisons à l'intérieur de l'heptagone
+function generateHousesInside(){
   const houses=[];
   const {x:cx,y:cy}=CONFIG.center;
+  const innerRadius=CITY_RADIUS-80; // éloigné du bord
   for(let i=0;i<CONFIG.houseCount;i++){
-    const angle=(i/CONFIG.houseCount)*TAU-Math.PI/2;
-    const radius=CITY_RADIUS-40; // un peu moins collé au bord
+    const angle=Math.random()*TAU;
+    const radius=Math.random()*innerRadius*0.8;
     const hx=cx+Math.cos(angle)*radius;
     const hy=cy+Math.sin(angle)*radius;
     const img=new Image(); img.src=HOUSE_IMAGES[i%HOUSE_IMAGES.length];
@@ -145,7 +91,7 @@ function generateHousesHeptagon(){
   return houses;
 }
 
-const HOUSES=generateHousesHeptagon();
+const HOUSES=generateHousesInside();
 const keys=new Set();
 const player={x:CONFIG.player.start.x,y:CONFIG.player.start.y,r:CONFIG.player.size};
 
@@ -182,19 +128,18 @@ function drawHouse(h){
 }
 
 function drawCity(){
-  // Fond extérieur
-  ctx.fillStyle='var(--violet-outside)';
+  // Fond extérieur rouge bordeaux
+  ctx.fillStyle='var(--bordeaux-outside)';
   ctx.fillRect(0,0,canvas.width,canvas.height);
 
-  // Heptagone intérieur
+  // Heptagone intérieur violet
   const {x:cx,y:cy}=CONFIG.center;
   ctx.beginPath();
   for(let i=0;i<=HEPTAGON_SIDES;i++){
     const angle=(i/HEPTAGON_SIDES)*TAU-Math.PI/2;
     const x=cx+Math.cos(angle)*CITY_RADIUS;
     const y=cy+Math.sin(angle)*CITY_RADIUS;
-    if(i===0) ctx.moveTo(x,y);
-    else ctx.lineTo(x,y);
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
   }
   ctx.closePath();
   ctx.fillStyle='var(--violet-city)';

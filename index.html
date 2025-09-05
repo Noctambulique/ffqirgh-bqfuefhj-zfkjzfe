@@ -294,7 +294,7 @@
     const h=getNearbyHouse();
     if(h && CONFIG.links.map[h.id]){
       promptEl.style.display='block';
-      promptEl.textContent = "Appuyez sur E pour voir : " + (CONFIG.names[h.id] || "Bâtiment");
+      promptEl.textContent = (CONFIG.names[h.id] || "Bâtiment");
     } else {
       promptEl.style.display='none';
     }

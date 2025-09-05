@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Deuxième Map</title>
+  <title>Deuxième Map avec 50 emplacements</title>
   <style>
     :root {
       --ui: #ffffff;
@@ -90,24 +90,50 @@
 
   const player = {x:CONFIG.player.start.x,y:CONFIG.player.start.y,r:CONFIG.player.size};
 
-  // --- Emplacements personnalisables ---
-  const PLACES = [];
-  const cols = 10, rows = 5;
-  const spacingX = CONFIG.world.width / (cols+1);
-  const spacingY = CONFIG.world.height / (rows+1);
+  // --- 50 emplacements déjà remplis ---
+const PLACES = [];
+const cols = 10, rows = 5;
+const spacingX = CONFIG.world.width / (cols+1);
+const spacingY = CONFIG.world.height / (rows+1);
 
-  for(let r=0;r<rows;r++){
-    for(let c=0;c<cols;c++){
-      const px = (c+1)*spacingX;
-      const py = (r+1)*spacingY;
-      PLACES.push({
-        x: px, y: py, size: 40,
-        image: null, // tu peux mettre une URL d'image ici
-        text: "Emplacement "+(r*cols+c+1),
-        imgObj: null
-      });
+const placeholderImage = "https://via.placeholder.com/40"; // image provisoire
+
+for(let r=0;r<rows;r++){
+  for(let c=0;c<cols;c++){
+    const id = r*cols+c+1;
+    const px = (c+1)*spacingX;
+    const py = (r+1)*spacingY;
+
+    // Par défaut : tous avec image provisoire + texte générique
+    let image = placeholderImage;
+    let text = "Emplacement " + id;
+
+    // ✅ Exemple 1 : Emplacement 1 avec une image de maison
+    if(id === 1){
+      image = "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/House_icon.svg/64px-House_icon.svg.png";
+      text = "Petite Maison";
     }
+
+    // ✅ Exemple 2 : Emplacement 5 avec une image d’arbre
+    if(id === 5){
+      image = "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Tree_font_awesome.svg/64px-Tree_font_awesome.svg.png";
+      text = "Grand Arbre";
+    }
+
+    // ✅ Exemple 3 : Emplacement 12 avec une image de coffre
+    if(id === 12){
+      image = "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Chest_icon.svg/64px-Chest_icon.svg.png";
+      text = "Coffre au trésor";
+    }
+
+    PLACES.push({
+      x: px, y: py, size: 40,
+      image: image,
+      text: text,
+      imgObj: null
+    });
   }
+}
 
   // --- Contrôles ---
   const TAU = Math.PI * 2;
@@ -171,7 +197,6 @@
         }
         if(p.imgObj.complete) ctx.drawImage(p.imgObj, p.x-p.size/2, p.y-p.size/2, p.size, p.size);
       } else {
-        // petit repère gris si pas d'image
         ctx.fillStyle = "rgba(255,255,255,0.15)";
         ctx.fillRect(p.x-p.size/2, p.y-p.size/2, p.size, p.size);
       }

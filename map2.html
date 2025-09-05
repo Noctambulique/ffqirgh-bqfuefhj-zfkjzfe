@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Deuxième Map — Zone Vide</title>
+  <style>
+    :root {
+      --ui: #ffffff;
+      --ui-shadow: rgba(0,0,0,.35);
+    }
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: "Courier New", monospace;
+      background: #0d0d0f;
+      color: #dcdcdc;
+    }
+    .wrap { display: grid; place-items: center; height: 100%; }
+    canvas {
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.08);
+      max-width: 96vw;
+      max-height: 92vh;
+    }
+    .hud {
+      position: fixed; inset: 16px auto auto 16px; color: var(--ui);
+      text-shadow: 0 2px 6px var(--ui-shadow);
+      user-select: none; font-size: 14px; line-height: 1.25;
+    }
+    .hud kbd {
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.35);
+      padding: 2px 6px; border-radius: 6px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.35);
+      margin-right: 4px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Deuxième Map -->
+  <div class="wrap">
+    <canvas id="game" width="960" height="600" aria-label="Deuxième zone"></canvas>
+  </div>
+  <div class="hud" aria-hidden="true">
+    <div><strong>Déplacements</strong> <kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd> ou <kbd>Flèches</kbd></div>
+  </div>
+
+  <script>
+  // --- Config ---
+  const CONFIG = {
+    world: { width: 960, height: 600 },
+    player: {
+      size: 32,
+      color: '#ffd166',
+      outline: 'rgba(0,0,0,.45)',
+      speed: 2.6,
+      start: { x: 480, y: 300 },
+      image: "http://www.image-heberg.fr/files/17570217122216427613.png"
+    }
+  };
+
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+
+  // --- Fond (vide ou image personnalisée) ---
+  const background = new Image();
+  background.src = "http://www.image-heberg.fr/files/17570213431743313302.png";
+
+  // --- Joueur ---
+  const playerImg = new Image();
+  playerImg.src = CONFIG.player.image;
+
+  const player = {x:CONFIG.player.start.x,y:CONFIG.player.start.y,r:CONFI

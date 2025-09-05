@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Village — Affichage noms bâtiments</title>
+  <title>Accès Bloqué — Village</title>
   <style>
     :root {
       --ui: #ffffff;
@@ -16,7 +16,6 @@
       background: #0d0d0f;
       color: #dcdcdc;
     }
-
     /* --- Écran secret --- */
     #lockscreen {
       position: fixed;
@@ -98,7 +97,7 @@
       position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
       color: var(--ui); font-weight: 600; letter-spacing: .2px;
       padding: 8px 12px; border-radius: 10px;
-      background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.35);
+      background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.35);
       display: none; white-space: nowrap; text-shadow: 0 2px 6px var(--ui-shadow);
     }
   </style>
@@ -119,8 +118,9 @@
   </div>
   <div class="hud" aria-hidden="true">
     <div><strong>Déplacements</strong> <kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd> ou <kbd>Flèches</kbd></div>
+    <div><strong>Entrer</strong> <kbd>E</kbd> quand vous êtes devant une maison</div>
   </div>
-  <div id="prompt" class="prompt" role="status" aria-live="polite"></div>
+  <div id="prompt" class="prompt" role="status" aria-live="polite">Appuyez sur <kbd>E</kbd> pour entrer</div>
 
   <script>
   // --- Écran secret ---
@@ -142,27 +142,38 @@
   const CONFIG = {
     world: { width: 960, height: 600 },
     center: { x: 480, y: 300 },
-    circleRadius: 170,
+    circleRadius: 170, // maisons un peu plus proches du centre
     houseCount: 9,
     house: { size: 80 },
     player: {
-      size: 32,
+      size: 32, // taille du sprite
       color: '#ffd166',
       outline: 'rgba(0,0,0,.45)',
       speed: 2.6,
       start: { x: 480, y: 300 },
       image: "http://www.image-heberg.fr/files/17570217122216427613.png"
     },
-    names: {
-      1: "Bibliothèque",
-      2: "Salle de musique",
-      3: "Galerie d’images",
+    links: { map: {
+      1: "http://www.image-heberg.fr/files/17570045253321247512.png",
+      2: "Musique$=.png",
+      3: "Image1.jpg",
+      4: "film.png",
+      5: "Power Point Ultime +.pdf",
+      6: "jeu.png",
+      7: "Philosophie (version 1) (version 1).xlsx",
+      8: "Bio Croisé Octavie Basile.pdf",
+      9: "http://www.image-heberg.fr/files/17570018873343452500.png"
+    }},
+    names: { // noms des bâtiments à afficher
+      1: "Agence de Voyage",
+      2: "Boite de Nuit",
+      3: "Boutique de vêtements",
       4: "Cinéma",
-      5: "Salle de réunion",
+      5: "Maison du Détective",
       6: "Salle de jeux",
-      7: "Bureau de philosophie",
-      8: "Laboratoire",
-      9: "Atelier d’art"
+      7: "Centre d'archive",
+      8: "Musée de la Triade",
+      9: "Médiathèque"
     }
   };
 
@@ -183,13 +194,17 @@
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
 
+  // --- Fond ---
   const background = new Image();
   background.src = "http://www.image-heberg.fr/files/17570213431743313302.png";
 
+  // --- Joueur ---
   const playerImg = new Image();
   playerImg.src = CONFIG.player.image;
+
   const player = {x:CONFIG.player.start.x,y:CONFIG.player.start.y,r:CONFIG.player.size};
 
+  // --- Maisons ---
   const TAU = Math.PI * 2;
   const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
   function generateHouses(){
@@ -208,6 +223,7 @@
   }
   const HOUSES = generateHouses();
 
+  // --- Contrôles ---
   const keys = new Set();
   window.addEventListener('keydown', e => {
     const k = e.key.toLowerCase();
@@ -276,13 +292,24 @@
   const promptEl = document.getElementById("prompt");
   function updatePrompt(){
     const h=getNearbyHouse();
-    if(h && CONFIG.names[h.id]){
+    if(h && CONFIG.links.map[h.id]){
       promptEl.style.display='block';
-      promptEl.textContent = CONFIG.names[h.id];
+      promptEl.textContent = "Appuyez sur E pour voir : " + (CONFIG.names[h.id] || "Bâtiment");
     } else {
       promptEl.style.display='none';
     }
   }
+
+  // --- Changement ici : appuyer sur E affiche le nom du bâtiment ---
+  window.addEventListener("keydown", e=>{
+    if(e.key.toLowerCase()==="e"){
+      const h=getNearbyHouse();
+      if(h && CONFIG.names[h.id]){
+        promptEl.style.display='block';
+        promptEl.textContent = CONFIG.names[h.id];
+      }
+    }
+  });
 
   function loop(){
     const next=tryMove(player.x,player.y);

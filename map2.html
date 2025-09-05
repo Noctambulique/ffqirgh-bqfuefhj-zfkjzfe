@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Deuxième Map — Zone Vide</title>
+  <title>Deuxième Map</title>
   <style>
     :root {
       --ui: #ffffff;
@@ -65,12 +65,65 @@
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
 
-  // --- Fond (vide ou image personnalisée) ---
+  // --- Fond personnalisable ---
   const background = new Image();
-  background.src = "http://www.image-heberg.fr/files/17570213431743313302.png";
+  background.src = "http://www.image-heberg.fr/files/1757093944326350587.webp"; // 🔄 Mets ton image ici
 
   // --- Joueur ---
   const playerImg = new Image();
   playerImg.src = CONFIG.player.image;
 
-  const player = {x:CONFIG.player.start.x,y:CONFIG.player.start.y,r:CONFI
+  const player = {x:CONFIG.player.start.x,y:CONFIG.player.start.y,r:CONFIG.player.size};
+
+  // --- Contrôles ---
+  const TAU = Math.PI * 2;
+  const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+  const keys = new Set();
+  window.addEventListener('keydown', e => {
+    const k = e.key.toLowerCase();
+    const movementKeys = ['z','q','s','d','arrowup','arrowdown','arrowleft','arrowright'];
+    if(movementKeys.includes(k)) e.preventDefault();
+    keys.add(k);
+  });
+  window.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
+
+  function tryMove(px,py){
+    let dx=0,dy=0;
+    if(keys.has('z')||keys.has('arrowup')) dy-=1;
+    if(keys.has('s')||keys.has('arrowdown')) dy+=1;
+    if(keys.has('q')||keys.has('arrowleft')) dx-=1;
+    if(keys.has('d')||keys.has('arrowright')) dx+=1;
+    const len=Math.hypot(dx,dy)||1;
+    dx=dx/len*CONFIG.player.speed;
+    dy=dy/len*CONFIG.player.speed;
+    return {x:clamp(px+dx,player.r,CONFIG.world.width-player.r),
+            y:clamp(py+dy,player.r,CONFIG.world.height-player.r)};
+  }
+
+  function drawPlayer(){
+    if (playerImg.complete && playerImg.naturalWidth > 0) {
+      ctx.drawImage(playerImg, player.x-player.r, player.y-player.r, player.r*2, player.r*2);
+    } else {
+      ctx.beginPath();
+      ctx.arc(player.x, player.y, player.r, 0, TAU);
+      ctx.fillStyle = CONFIG.player.color; ctx.fill();
+      ctx.lineWidth = 2; ctx.strokeStyle = CONFIG.player.outline; ctx.stroke();
+    }
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    if(background.complete) ctx.drawImage(background,0,0,canvas.width,canvas.height);
+    drawPlayer();
+  }
+
+  function loop(){
+    const next=tryMove(player.x,player.y);
+    player.x=next.x; player.y=next.y;
+    draw();
+    requestAnimationFrame(loop);
+  }
+  loop();
+  </script>
+</body>
+</html>

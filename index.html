@@ -142,11 +142,11 @@
   const CONFIG = {
     world: { width: 960, height: 600 },
     center: { x: 480, y: 300 },
-    circleRadius: 170, // maisons un peu plus proches du centre
+    circleRadius: 170,
     houseCount: 9,
     house: { size: 80 },
     player: {
-      size: 32, // taille du sprite
+      size: 32,
       color: '#ffd166',
       outline: 'rgba(0,0,0,.45)',
       speed: 2.6,
@@ -161,10 +161,10 @@
       5: "Power Point Ultime +.pdf",
       6: "jeu.png",
       7: "Philosophie (version 1) (version 1).xlsx",
-      8: "Bio Croisé Octavie Basile.pdf",
+      8: "map2.html", // maison 8 -> nouvelle map
       9: "http://www.image-heberg.fr/files/17570018873343452500.png"
     }},
-    names: { // noms des bâtiments à afficher
+    names: {
       1: "Agence de Voyage",
       2: "Boite de Nuit",
       3: "Boutique de vêtements",
@@ -300,13 +300,18 @@
     }
   }
 
-  // --- Changement ici : appuyer sur E affiche le nom du bâtiment ---
+  // --- Appui sur E ---
   window.addEventListener("keydown", e=>{
     if(e.key.toLowerCase()==="e"){
       const h=getNearbyHouse();
       if(h && CONFIG.names[h.id]){
-        promptEl.style.display='block';
-        promptEl.textContent = CONFIG.names[h.id];
+        if(h.id === 8) {
+          // Redirection vers une autre map
+          window.location.href = CONFIG.links.map[8];
+        } else {
+          promptEl.style.display='block';
+          promptEl.textContent = CONFIG.names[h.id];
+        }
       }
     }
   });

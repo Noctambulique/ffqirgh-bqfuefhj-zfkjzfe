@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Accès Bloqué — Village</title>
+  <title>Accès Bloqué — Village (HD)</title>
   <style>
     :root {
       --ui: #ffffff;
@@ -189,8 +189,17 @@
     "http://www.image-heberg.fr/files/17570037951807174458.png"
   ];
 
+  // --- Canvas HiDPI ---
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
+
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = CONFIG.world.width * dpr;
+  canvas.height = CONFIG.world.height * dpr;
+  canvas.style.width = CONFIG.world.width + "px";
+  canvas.style.height = CONFIG.world.height + "px";
+  ctx.scale(dpr, dpr);
+
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
 
@@ -201,7 +210,6 @@
   // --- Joueur ---
   const playerImg = new Image();
   playerImg.src = CONFIG.player.image;
-
   const player = {x:CONFIG.player.start.x,y:CONFIG.player.start.y,r:CONFIG.player.size};
 
   // --- Maisons ---
@@ -247,7 +255,7 @@
   }
 
   function drawHouse(h){
-    if(h.img.complete){
+    if(h.img.complete && h.img.naturalWidth > 0){
       const aspect = h.img.width / h.img.height;
       let drawW, drawH;
       if(aspect >= 1){
@@ -274,7 +282,7 @@
 
   function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    if(background.complete) ctx.drawImage(background,0,0,canvas.width,canvas.height);
+    if(background.complete) ctx.drawImage(background,0,0,CONFIG.world.width,CONFIG.world.height);
     for(const h of HOUSES) drawHouse(h);
     drawPlayer();
   }
@@ -306,10 +314,8 @@
       const h=getNearbyHouse();
       if(h && CONFIG.links.map[h.id]){
         if(h.id === 8) {
-          // Redirection vers une autre map
           window.location.href = CONFIG.links.map[8];
         } else {
-          // Ouvrir le lien de la maison dans un nouvel onglet
           window.open(CONFIG.links.map[h.id], "_blank");
         }
       }

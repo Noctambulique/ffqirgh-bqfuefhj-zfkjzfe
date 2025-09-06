@@ -304,13 +304,13 @@
   window.addEventListener("keydown", e=>{
     if(e.key.toLowerCase()==="e"){
       const h=getNearbyHouse();
-      if(h && CONFIG.names[h.id]){
+      if(h && CONFIG.links.map[h.id]){
         if(h.id === 8) {
           // Redirection vers une autre map
           window.location.href = CONFIG.links.map[8];
         } else {
-          promptEl.style.display='block';
-          promptEl.textContent = CONFIG.names[h.id];
+          // Ouvrir le lien de la maison dans un nouvel onglet
+          window.open(CONFIG.links.map[h.id], "_blank");
         }
       }
     }

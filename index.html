@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Accès Bloqué — Village (HD)</title>
+  <title>Accès Bloqué — Village (HD, pas de déformation)</title>
   <style>
     :root {
       --ui: #ffffff;
@@ -16,114 +16,76 @@
       background: #0d0d0f;
       color: #dcdcdc;
     }
-    /* --- Écran secret --- */
     #lockscreen {
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       background: radial-gradient(circle at center, #1a1a20 0%, #000 100%);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
       text-align: center;
     }
-    #lockscreen h1 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      letter-spacing: 2px;
-      text-shadow: 0 0 10px rgba(255,255,255,.25);
-    }
-    #lockscreen p {
-      margin-bottom: 1rem;
-      font-size: 1rem;
-      opacity: .85;
-    }
+    #lockscreen h1 { font-size: 2rem; margin-bottom: 1rem; }
+    #lockscreen p { margin-bottom: 1rem; }
     #lockscreen input {
       padding: 10px 14px;
-      border: 1px solid #444;
-      border-radius: 6px;
-      background: #111;
-      color: #eee;
-      font-family: inherit;
-      font-size: 1rem;
-      letter-spacing: 1px;
-      outline: none;
-      box-shadow: 0 0 12px rgba(0,255,150,.3);
+      border: 1px solid #444; border-radius: 6px;
+      background: #111; color: #eee;
+      font-family: inherit; font-size: 1rem;
       text-align: center;
     }
     #lockscreen button {
-      margin-top: 1rem;
-      padding: 10px 20px;
-      background: #111;
-      border: 1px solid #0f0;
-      color: #0f0;
-      font-family: inherit;
-      font-size: 1rem;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all .2s;
+      margin-top: 1rem; padding: 10px 20px;
+      background: #111; border: 1px solid #0f0; color: #0f0;
+      border-radius: 6px; cursor: pointer;
     }
-    #lockscreen button:hover {
-      background: #0f0;
-      color: #000;
-    }
-    #error {
-      margin-top: 1rem;
-      color: #f55;
-      display: none;
-    }
+    #error { margin-top: 1rem; color: #f55; display: none; }
 
-    /* --- Map village --- */
     .wrap { display: none; place-items: center; height: 100%; }
     canvas {
       border-radius: 16px;
-      box-shadow: 0 20px 60px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.08);
-      max-width: 96vw;
-      max-height: 92vh;
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+      max-width: 96vw; max-height: 92vh;
     }
     .hud {
-      position: fixed; inset: 16px auto auto 16px; color: var(--ui);
-      text-shadow: 0 2px 6px var(--ui-shadow);
-      user-select: none; font-size: 14px; line-height: 1.25;
+      position: fixed; left: 16px; top: 16px;
+      color: var(--ui); text-shadow: 0 2px 6px var(--ui-shadow);
+      font-size: 14px;
     }
     .hud kbd {
       background: rgba(255,255,255,.18);
       border: 1px solid rgba(255,255,255,.35);
       padding: 2px 6px; border-radius: 6px;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.35);
       margin-right: 4px;
     }
     .prompt {
-      position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
-      color: var(--ui); font-weight: 600; letter-spacing: .2px;
+      position: fixed; left: 50%; bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,.35);
       padding: 8px 12px; border-radius: 10px;
-      background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.35);
-      display: none; white-space: nowrap; text-shadow: 0 2px 6px var(--ui-shadow);
+      border: 1px solid rgba(255,255,255,.35);
+      display: none;
     }
   </style>
 </head>
 <body>
-  <!-- Écran secret -->
   <div id="lockscreen">
     <h1>🔎 Système de Vérification</h1>
     <p>Entrez le mot de passe pour accéder à Naos :</p>
-    <input type="password" id="code" placeholder="Mot de passe" aria-label="Mot de passe" />
+    <input type="password" id="code" placeholder="Mot de passe" />
     <button id="enterBtn">Entrer</button>
     <div id="error">❌ Code incorrect...</div>
   </div>
 
-  <!-- Village -->
   <div class="wrap">
-    <canvas id="game" width="960" height="600" aria-label="Village circulaire"></canvas>
+    <canvas id="game" width="960" height="600"></canvas>
   </div>
-  <div class="hud" aria-hidden="true">
-    <div><strong>Déplacements</strong> <kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd> ou <kbd>Flèches</kbd></div>
-    <div><strong>Entrer</strong> <kbd>E</kbd> quand vous êtes devant une maison</div>
+  <div class="hud">
+    <div><kbd>ZQSD</kbd> ou <kbd>Flèches</kbd> pour bouger</div>
+    <div><kbd>E</kbd> pour entrer dans une maison</div>
   </div>
-  <div id="prompt" class="prompt" role="status" aria-live="polite">Appuyez sur <kbd>E</kbd> pour entrer</div>
+  <div id="prompt" class="prompt">Appuyez sur <kbd>E</kbd> pour entrer</div>
 
   <script>
-  // --- Écran secret ---
+  // --- Vérification du mot de passe ---
   function checkCode() {
     const input = document.getElementById("code").value.trim();
     const errorEl = document.getElementById('error');
@@ -144,11 +106,9 @@
     center: { x: 480, y: 300 },
     circleRadius: 170,
     houseCount: 9,
-    house: { size: 80 },
+    house: { maxSize: 80 },
     player: {
-      size: 32,
-      color: '#ffd166',
-      outline: 'rgba(0,0,0,.45)',
+      size: 48,
       speed: 2.6,
       start: { x: 480, y: 300 },
       image: "http://www.image-heberg.fr/files/17570217122216427613.png"
@@ -161,7 +121,7 @@
       5: "Power Point Ultime +.pdf",
       6: "jeu.png",
       7: "Philosophie (version 1) (version 1).xlsx",
-      8: "map2.html", // maison 8 -> nouvelle map
+      8: "map2.html",
       9: "http://www.image-heberg.fr/files/17570018873343452500.png"
     }},
     names: {
@@ -192,14 +152,12 @@
   // --- Canvas HiDPI ---
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
-
   const dpr = window.devicePixelRatio || 1;
   canvas.width = CONFIG.world.width * dpr;
   canvas.height = CONFIG.world.height * dpr;
   canvas.style.width = CONFIG.world.width + "px";
   canvas.style.height = CONFIG.world.height + "px";
   ctx.scale(dpr, dpr);
-
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
 
@@ -210,22 +168,19 @@
   // --- Joueur ---
   const playerImg = new Image();
   playerImg.src = CONFIG.player.image;
-  const player = {x:CONFIG.player.start.x,y:CONFIG.player.start.y,r:CONFIG.player.size};
+  const player = {x:CONFIG.player.start.x,y:CONFIG.player.start.y};
 
   // --- Maisons ---
   const TAU = Math.PI * 2;
-  const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
   function generateHouses(){
     const houses=[];
-    const {x:cx,y:cy}=CONFIG.center;
-    const r=CONFIG.circleRadius;
     for(let i=0;i<CONFIG.houseCount;i++){
       const angle=(i/CONFIG.houseCount)*TAU - Math.PI/2;
-      const hx=cx+Math.cos(angle)*r;
-      const hy=cy+Math.sin(angle)*r;
+      const hx=CONFIG.center.x+Math.cos(angle)*CONFIG.circleRadius;
+      const hy=CONFIG.center.y+Math.sin(angle)*CONFIG.circleRadius;
       const img=new Image();
       img.src=HOUSE_IMAGES[i % HOUSE_IMAGES.length];
-      houses.push({id:i+1,x:hx,y:hy,w:CONFIG.house.size,h:CONFIG.house.size,img});
+      houses.push({id:i+1,x:hx,y:hy,img});
     }
     return houses;
   }
@@ -233,12 +188,7 @@
 
   // --- Contrôles ---
   const keys = new Set();
-  window.addEventListener('keydown', e => {
-    const k = e.key.toLowerCase();
-    const movementKeys = ['z','q','s','d','arrowup','arrowdown','arrowleft','arrowright'];
-    if(movementKeys.includes(k)) e.preventDefault();
-    keys.add(k);
-  });
+  window.addEventListener('keydown', e => keys.add(e.key.toLowerCase()));
   window.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
 
   function tryMove(px,py){
@@ -250,41 +200,29 @@
     const len=Math.hypot(dx,dy)||1;
     dx=dx/len*CONFIG.player.speed;
     dy=dy/len*CONFIG.player.speed;
-    return {x:clamp(px+dx,player.r,CONFIG.world.width-player.r),
-            y:clamp(py+dy,player.r,CONFIG.world.height-player.r)};
+    return {x:px+dx,y:py+dy};
   }
 
-  function drawHouse(h){
-    if(h.img.complete && h.img.naturalWidth > 0){
-      const aspect = h.img.width / h.img.height;
-      let drawW, drawH;
-      if(aspect >= 1){
-        drawW = h.w;
-        drawH = h.w / aspect;
-      } else {
-        drawH = h.h;
-        drawW = h.h * aspect;
-      }
-      ctx.drawImage(h.img, h.x-drawW/2, h.y-drawH/2, drawW, drawH);
-    }
-  }
-
-  function drawPlayer(){
-    if (playerImg.complete && playerImg.naturalWidth > 0) {
-      ctx.drawImage(playerImg, player.x-player.r, player.y-player.r, player.r*2, player.r*2);
-    } else {
-      ctx.beginPath();
-      ctx.arc(player.x, player.y, player.r, 0, TAU);
-      ctx.fillStyle = CONFIG.player.color; ctx.fill();
-      ctx.lineWidth = 2; ctx.strokeStyle = CONFIG.player.outline; ctx.stroke();
-    }
+  function drawImageKeepRatio(img, cx, cy, maxW, maxH){
+    const iw=img.naturalWidth, ih=img.naturalHeight;
+    if(!iw||!ih) return;
+    const scale=Math.min(maxW/iw, maxH/ih);
+    const w=iw*scale, h=ih*scale;
+    ctx.drawImage(img, cx-w/2, cy-h/2, w, h);
   }
 
   function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    if(background.complete) ctx.drawImage(background,0,0,CONFIG.world.width,CONFIG.world.height);
-    for(const h of HOUSES) drawHouse(h);
-    drawPlayer();
+    if(background.complete) {
+      drawImageKeepRatio(background, CONFIG.world.width/2, CONFIG.world.height/2,
+                         CONFIG.world.width, CONFIG.world.height);
+    }
+    for(const h of HOUSES){
+      if(h.img.complete) drawImageKeepRatio(h.img, h.x, h.y, CONFIG.house.maxSize, CONFIG.house.maxSize);
+    }
+    if(playerImg.complete) {
+      drawImageKeepRatio(playerImg, player.x, player.y, CONFIG.player.size, CONFIG.player.size);
+    }
   }
 
   function getNearbyHouse(){
@@ -293,7 +231,7 @@
       const dist=Math.hypot(player.x-h.x,player.y-h.y);
       if(dist<bestDist){ bestDist=dist; nearest=h; }
     }
-    if(bestDist < CONFIG.house.size * 0.6) return nearest;
+    if(bestDist < CONFIG.house.maxSize * 0.6) return nearest;
     return null;
   }
 
@@ -302,22 +240,18 @@
     const h=getNearbyHouse();
     if(h && CONFIG.links.map[h.id]){
       promptEl.style.display='block';
-      promptEl.textContent = (CONFIG.names[h.id] || "Bâtiment");
+      promptEl.textContent = CONFIG.names[h.id] || "Bâtiment";
     } else {
       promptEl.style.display='none';
     }
   }
 
-  // --- Appui sur E ---
   window.addEventListener("keydown", e=>{
     if(e.key.toLowerCase()==="e"){
       const h=getNearbyHouse();
       if(h && CONFIG.links.map[h.id]){
-        if(h.id === 8) {
-          window.location.href = CONFIG.links.map[8];
-        } else {
-          window.open(CONFIG.links.map[h.id], "_blank");
-        }
+        if(h.id === 8) window.location.href = CONFIG.links.map[8];
+        else window.open(CONFIG.links.map[h.id], "_blank");
       }
     }
   });

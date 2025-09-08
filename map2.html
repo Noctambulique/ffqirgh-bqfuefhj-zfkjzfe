@@ -62,7 +62,7 @@ const CONFIG = {
     outline: 'rgba(0,0,0,.45)',
     speed: 2.6,
     start: { x: 480, y: 300 },
-    image: "http://www.image-heberg.fr/files/17570217122216427613.png"
+    image: "https://via.placeholder.com/64" // image de joueur simple
   }
 };
 
@@ -72,7 +72,8 @@ ctx.imageSmoothingEnabled = true;
 ctx.imageSmoothingQuality = "high";
 
 const background = new Image();
-background.src = "https://via.placeholder.com/960x600/222/eee?text=Background"; // change ton fond ici
+background.src = "https://via.placeholder.com/960x600/222/eee?text=Background"; 
+background.onload = () => draw(); // premier rendu quand fond prêt
 
 const playerImg = new Image();
 playerImg.src = CONFIG.player.image;
@@ -126,11 +127,11 @@ for(let r=0; r<rows; r++){
 }
 
 // --- Exemple : Emplacements personnalisés ---
-PLACES[0].image = "https://upload.wikimedia.org/wikipedia/commons/6/6d/House_icon.svg";
+PLACES[0].image = "https://via.placeholder.com/40/ff0000?text=H"; // maison rouge
 PLACES[0].text = "Petite Maison";
-PLACES[4].image = "https://upload.wikimedia.org/wikipedia/commons/f/f6/Tree_font_awesome.svg";
+PLACES[4].image = "https://via.placeholder.com/40/00ff00?text=A"; // arbre vert
 PLACES[4].text = "Grand Arbre";
-PLACES[11].image = "https://upload.wikimedia.org/wikipedia/commons/2/21/Chest_icon.svg";
+PLACES[11].image = "https://via.placeholder.com/40/ffff00?text=C"; // coffre jaune
 PLACES[11].text = "Coffre au trésor";
 
 // --- Dessin des emplacements ---
@@ -182,7 +183,9 @@ function updatePrompt(){
 // --- Boucle principale ---
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  if(background.complete) ctx.drawImage(background,0,0,canvas.width,canvas.height);
+  if(background.complete && background.naturalWidth>0){
+    ctx.drawImage(background,0,0,canvas.width,canvas.height);
+  }
   drawPlaces();
   drawPlayer();
 }

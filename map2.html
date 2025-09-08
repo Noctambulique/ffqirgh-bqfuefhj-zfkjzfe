@@ -42,6 +42,14 @@
     background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.35);
     display: none; white-space: nowrap; text-shadow: 0 2px 6px var(--ui-shadow);
   }
+  #dialogBox {
+    position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,.85); color: #fff;
+    padding: 16px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.3);
+    width: 400px; max-width: 90%;
+    display: none;
+  }
 </style>
 </head>
 <body>
@@ -50,10 +58,13 @@
 </div>
 <div class="hud" aria-hidden="true">
   <div><strong>Déplacements</strong> <kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd> ou <kbd>Flèches</kbd></div>
+  <div><strong>Interaction</strong> <kbd>E</kbd></div>
 </div>
 <div id="prompt"></div>
+<div id="dialogBox"></div>
 
 <script>
+/* === CONFIG === */
 const CONFIG = {
   world: { width: 960, height: 600 },
   player: {
@@ -62,19 +73,22 @@ const CONFIG = {
     outline: 'rgba(0,0,0,.45)',
     speed: 2.6,
     start: { x: 480, y: 300 },
-    image: "https://via.placeholder.com/64" // image de joueur simple
+    image: "https://via.placeholder.com/64"
   }
 };
 
+/* === CANVAS === */
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = true;
 ctx.imageSmoothingQuality = "high";
 
+/* === BACKGROUND === */
 const background = new Image();
 background.src = "https://via.placeholder.com/960x600/222/eee?text=Background"; 
-background.onload = () => draw(); // premier rendu quand fond prêt
+background.onload = () => draw();
 
+/* === PLAYER === */
 const playerImg = new Image();
 playerImg.src = CONFIG.player.image;
 const player = {x:CONFIG.player.start.x, y:CONFIG.player.start.y, r:CONFIG.player.size};
@@ -87,27 +101,13 @@ window.addEventListener('keydown', e => {
   const k = e.key.toLowerCase();
   if(['z','q','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(k)) e.preventDefault();
   keys.add(k);
+  if(k==='e') openDialogue();
 });
 window.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
 
-function tryMove(px,py){
-  let dx=0, dy=0;
-  if(keys.has('z')||keys.has('arrowup')) dy-=1;
-  if(keys.has('s')||keys.has('arrowdown')) dy+=1;
-  if(keys.has('q')||keys.has('arrowleft')) dx-=1;
-  if(keys.has('d')||keys.has('arrowright')) dx+=1;
-  const len=Math.hypot(dx,dy)||1;
-  dx=dx/len*CONFIG.player.speed;
-  dy=dy/len*CONFIG.player.speed;
-  return {
-    x: clamp(px+dx, player.r, CONFIG.world.width-player.r),
-    y: clamp(py+dy, player.r, CONFIG.world.height-player.r)
-  };
-}
-
-// --- 50 emplacements ---
+/* === PLACES (100 emplacements) === */
 const PLACES = [];
-const cols = 10, rows = 5;
+const cols = 10, rows = 10;
 const spacingX = CONFIG.world.width/(cols+1);
 const spacingY = CONFIG.world.height/(rows+1);
 const placeholderImage = "https://via.placeholder.com/40";
@@ -118,6 +118,7 @@ for(let r=0; r<rows; r++){
     const px = (c+1)*spacingX;
     const py = (r+1)*spacingY;
     PLACES.push({
+      id,
       x:px, y:py, size:40,
       image: placeholderImage,
       text: "Emplacement " + id,
@@ -126,30 +127,26 @@ for(let r=0; r<rows; r++){
   }
 }
 
-// --- Exemple : Emplacements personnalisés ---
-PLACES[0].image = "http://www.image-heberg.fr/files/17572931293581598550.png"; // maison rouge
+/* === Exemple de personnalisation === */
+PLACES[0].image = "http://www.image-heberg.fr/files/17572931293581598550.png"; 
 PLACES[0].text = "Petite Maison";
-PLACES[4].image = "https://via.placeholder.com/40/00ff00?text=A"; // arbre vert
+PLACES[4].image = "https://via.placeholder.com/40/00ff00?text=A"; 
 PLACES[4].text = "Grand Arbre";
-PLACES[11].image = "https://via.placeholder.com/40/ffff00?text=C"; // coffre jaune
-PLACES[11].text = "Coffre au trésor";
 
-// --- Dessin des emplacements ---
+/* === DESSIN === */
 function drawPlaces(){
   for(const place of PLACES){
     if(!place.imgObj){
       place.imgObj = new Image();
       place.imgObj.src = place.image;
     }
-    if(place.imgObj.complete && place.imgObj.naturalWidth>0){
+    if(place.imgObj.complete){
       ctx.drawImage(place.imgObj, place.x-place.size/2, place.y-place.size/2, place.size, place.size);
     }
   }
 }
-
-// --- Dessin du joueur ---
 function drawPlayer(){
-  if(playerImg.complete && playerImg.naturalWidth>0){
+  if(playerImg.complete){
     ctx.drawImage(playerImg, player.x-player.r, player.y-player.r, player.r*2, player.r*2);
   } else {
     ctx.beginPath();
@@ -159,8 +156,10 @@ function drawPlayer(){
   }
 }
 
-// --- Prompt pour texte emplacement ---
+/* === INTERACTIONS === */
 const promptEl = document.getElementById("prompt");
+const dialogBox = document.getElementById("dialogBox");
+
 function getNearbyPlace(){
   let nearest=null, bestDist=Infinity;
   for(const p of PLACES){
@@ -174,24 +173,58 @@ function updatePrompt(){
   const place = getNearbyPlace();
   if(place){
     promptEl.style.display='block';
-    promptEl.textContent = place.text;
+    promptEl.textContent = place.text + " (E pour interagir)";
   } else {
     promptEl.style.display='none';
   }
 }
+function openDialogue(){
+  const place = getNearbyPlace();
+  if(!place) return;
 
-// --- Boucle principale ---
+  const url = `dialogues/${place.id}.json`;
+  fetch(url)
+    .then(r => r.json())
+    .then(data => {
+      dialogBox.innerHTML = `
+        <h3 style="margin:0 0 8px 0;">${data.title || "Sans titre"}</h3>
+        <p>${data.text || "Pas de contenu."}</p>
+        <button onclick="dialogBox.style.display='none'" 
+          style="margin-top:8px;padding:4px 8px;border:none;background:#444;color:#fff;border-radius:6px;">
+          Fermer
+        </button>
+      `;
+      dialogBox.style.display = "block";
+    })
+    .catch(()=> {
+      dialogBox.innerHTML = `
+        <p style="color:#f55;">⚠ Dialogue introuvable pour l'emplacement ${place.id}.</p>
+      `;
+      dialogBox.style.display = "block";
+    });
+}
+
+/* === GAME LOOP === */
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  if(background.complete && background.naturalWidth>0){
+  if(background.complete){
     ctx.drawImage(background,0,0,canvas.width,canvas.height);
   }
   drawPlaces();
   drawPlayer();
 }
 function loop(){
-  const next = tryMove(player.x, player.y);
-  player.x = next.x; player.y = next.y;
+  let dx=0, dy=0;
+  if(keys.has('z')||keys.has('arrowup')) dy-=1;
+  if(keys.has('s')||keys.has('arrowdown')) dy+=1;
+  if(keys.has('q')||keys.has('arrowleft')) dx-=1;
+  if(keys.has('d')||keys.has('arrowright')) dx+=1;
+  const len=Math.hypot(dx,dy)||1;
+  dx=dx/len*CONFIG.player.speed;
+  dy=dy/len*CONFIG.player.speed;
+  player.x = clamp(player.x+dx, player.r, CONFIG.world.width-player.r);
+  player.y = clamp(player.y+dy, player.r, CONFIG.world.height-player.r);
+
   draw();
   updatePrompt();
   requestAnimationFrame(loop);

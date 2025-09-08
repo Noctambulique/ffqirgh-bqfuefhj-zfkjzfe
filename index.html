@@ -103,7 +103,6 @@
   </style>
 </head>
 <body>
-  <!-- Écran secret -->
   <div id="lockscreen">
     <h1>🔎 Système de Vérification</h1>
     <p>Entrez le mot de passe pour accéder à Naos :</p>
@@ -112,9 +111,8 @@
     <div id="error">❌ Code incorrect...</div>
   </div>
 
-  <!-- Village -->
   <div class="wrap">
-    <canvas id="game" width="960" height="600" aria-label="Village circulaire"></canvas>
+    <canvas id="game" aria-label="Village circulaire"></canvas>
   </div>
   <div class="hud" aria-hidden="true">
     <div><strong>Déplacements</strong> <kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd> ou <kbd>Flèches</kbd></div>
@@ -161,17 +159,12 @@
       5: "Power Point Ultime +.pdf",
       6: "jeu.png",
       7: "map2.html",
-      8: "Bio Croisé Octavie Basile.pdf", // maison 8 -> nouvelle map
+      8: "Bio Croisé Octavie Basile.pdf",
     }},
     names: {
-      1: "Agence de Voyage",
-      2: "Boite de Nuit",
-      3: "Boutique de vêtements",
-      4: "Cinéma",
-      5: "Maison du Détective",
-      6: "Salle de jeux",
-      7: "Centre d'archive",
-      8: "Musée des Domus",
+      1: "Agence de Voyage", 2: "Boite de Nuit", 3: "Boutique de vêtements",
+      4: "Cinéma", 5: "Maison du Détective", 6: "Salle de jeux",
+      7: "Centre d'archive", 8: "Musée des Domus",
     }
   };
 
@@ -189,6 +182,25 @@
 
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
+
+  // ✨ AMÉLIORATION DE LA QUALITÉ POUR ÉCRANS HiDPI (Retina)
+  // =======================================================
+  // On définit la taille d'affichage souhaitée via JS
+  canvas.style.width = `${CONFIG.world.width}px`;
+  canvas.style.height = `${CONFIG.world.height}px`;
+
+  // On récupère le ratio de pixels de l'appareil
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+
+  // On définit la résolution interne du canvas en multipliant par le ratio
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+
+  // On met à l'échelle le contexte pour que les coordonnées de dessin restent les mêmes
+  ctx.scale(dpr, dpr);
+  // =======================================================
+
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
 
@@ -199,7 +211,6 @@
   // --- Joueur ---
   const playerImg = new Image();
   playerImg.src = CONFIG.player.image;
-
   const player = {x:CONFIG.player.start.x,y:CONFIG.player.start.y,r:CONFIG.player.size};
 
   // --- Maisons ---
@@ -248,13 +259,8 @@
     if(h.img.complete){
       const aspect = h.img.width / h.img.height;
       let drawW, drawH;
-      if(aspect >= 1){
-        drawW = h.w;
-        drawH = h.w / aspect;
-      } else {
-        drawH = h.h;
-        drawW = h.h * aspect;
-      }
+      if(aspect >= 1){ drawW = h.w; drawH = h.w / aspect; }
+      else { drawH = h.h; drawW = h.h * aspect; }
       ctx.drawImage(h.img, h.x-drawW/2, h.y-drawH/2, drawW, drawH);
     }
   }
@@ -271,8 +277,8 @@
   }
 
   function draw(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    if(background.complete) ctx.drawImage(background,0,0,canvas.width,canvas.height);
+    ctx.clearRect(0,0,CONFIG.world.width,CONFIG.world.height);
+    if(background.complete) ctx.drawImage(background,0,0,CONFIG.world.width,CONFIG.world.height);
     for(const h of HOUSES) drawHouse(h);
     drawPlayer();
   }
@@ -298,16 +304,13 @@
     }
   }
 
-  // --- Appui sur E ---
   window.addEventListener("keydown", e=>{
     if(e.key.toLowerCase()==="e"){
       const h=getNearbyHouse();
       if(h && CONFIG.links.map[h.id]){
         if(h.id === 8) {
-          // Redirection vers une autre map
           window.location.href = CONFIG.links.map[8];
         } else {
-          // Ouvrir le lien de la maison dans un nouvel onglet
           window.open(CONFIG.links.map[h.id], "_blank");
         }
       }

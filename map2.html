@@ -3,25 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Deuxième Map — Fonctionnelle</title>
+<title>Deuxième Map — Fonctionnelle (Dialogues intégrés)</title>
 <style>
-  :root {
-    --ui: #ffffff;
-    --ui-shadow: rgba(0,0,0,.35);
-  }
+  :root { --ui: #ffffff; --ui-shadow: rgba(0,0,0,.35); }
   html, body {
-    height: 100%;
-    margin: 0;
+    height: 100%; margin: 0;
     font-family: "Courier New", monospace;
-    background: #0d0d0f;
-    color: #dcdcdc;
+    background: #0d0d0f; color: #dcdcdc;
   }
   .wrap { display: grid; place-items: center; height: 100%; }
   canvas {
     border-radius: 16px;
     box-shadow: 0 20px 60px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.08);
-    max-width: 96vw;
-    max-height: 92vh;
+    max-width: 96vw; max-height: 92vh;
   }
   .hud {
     position: fixed; inset: 16px auto auto 16px; color: var(--ui);
@@ -47,14 +41,13 @@
     background: rgba(0,0,0,.85); color: #fff;
     padding: 16px; border-radius: 12px;
     border: 1px solid rgba(255,255,255,.3);
-    width: 400px; max-width: 90%;
-    display: none;
+    width: 400px; max-width: 90%; display: none;
   }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <canvas id="game" width="960" height="600" aria-label="Deuxième zone"></canvas>
+  <canvas id="game" width="960" height="600"></canvas>
 </div>
 <div class="hud" aria-hidden="true">
   <div><strong>Déplacements</strong> <kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd> ou <kbd>Flèches</kbd></div>
@@ -64,31 +57,52 @@
 <div id="dialogBox"></div>
 
 <script>
+/* === DIALOGUES === */
+<script>
+/* === DIALOGUES === */
+const DIALOGUES = {
+  1: {
+    title: "Petite Maison",
+    text: "Bienvenue dans la petite maison. L’air est chaleureux et tu sens une odeur de bois brûlé."
+  },
+  2: {
+    title: "Rivière",
+    text: "Une petite rivière coule doucement. Tu entends le bruit apaisant de l’eau."
+  },
+  3: {
+    title: "Forêt dense",
+    text: "Les arbres sont si serrés qu’ils cachent presque le ciel."
+  },
+  4: {
+    title: "Vieux Puits",
+    text: "Un puits en pierre recouvert de mousse. Tu entends un écho lointain si tu te penches."
+  },
+  5: {
+    title: "Grand Arbre",
+    text: "Un chêne majestueux, vieux de plusieurs siècles. Ses branches semblent toucher le ciel."
+  },
+  // ... et ainsi de suite jusqu’à 100
+};
+</script>
+
 /* === CONFIG === */
 const CONFIG = {
   world: { width: 960, height: 600 },
   player: {
-    size: 32,
-    color: '#ffd166',
-    outline: 'rgba(0,0,0,.45)',
-    speed: 2.6,
-    start: { x: 480, y: 300 },
+    size: 32, color: '#ffd166', outline: 'rgba(0,0,0,.45)',
+    speed: 2.6, start: { x: 480, y: 300 },
     image: "https://via.placeholder.com/64"
   }
 };
 
-/* === CANVAS === */
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = true;
-ctx.imageSmoothingQuality = "high";
 
-/* === BACKGROUND === */
 const background = new Image();
 background.src = "https://via.placeholder.com/960x600/222/eee?text=Background"; 
 background.onload = () => draw();
 
-/* === PLAYER === */
 const playerImg = new Image();
 playerImg.src = CONFIG.player.image;
 const player = {x:CONFIG.player.start.x, y:CONFIG.player.start.y, r:CONFIG.player.size};
@@ -105,7 +119,7 @@ window.addEventListener('keydown', e => {
 });
 window.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
 
-/* === PLACES (100 emplacements) === */
+/* === PLACES === */
 const PLACES = [];
 const cols = 10, rows = 10;
 const spacingX = CONFIG.world.width/(cols+1);
@@ -117,9 +131,7 @@ for(let r=0; r<rows; r++){
     const id = r*cols+c+1;
     const px = (c+1)*spacingX;
     const py = (r+1)*spacingY;
-    PLACES.push({
-      id,
-      x:px, y:py, size:40,
+    PLACES.push({ id, x:px, y:py, size:40,
       image: placeholderImage,
       text: "Emplacement " + id,
       imgObj: null
@@ -127,7 +139,7 @@ for(let r=0; r<rows; r++){
   }
 }
 
-/* === Exemple de personnalisation === */
+/* === Exemple custom === */
 PLACES[0].image = "http://www.image-heberg.fr/files/17572931293581598550.png"; 
 PLACES[0].text = "Petite Maison";
 PLACES[4].image = "https://via.placeholder.com/40/00ff00?text=A"; 
@@ -182,29 +194,19 @@ function openDialogue(){
   const place = getNearbyPlace();
   if(!place) return;
 
-  const url = `dialogues/${place.id}.json`;
-  fetch(url)
-    .then(r => r.json())
-    .then(data => {
-      dialogBox.innerHTML = `
-        <h3 style="margin:0 0 8px 0;">${data.title || "Sans titre"}</h3>
-        <p>${data.text || "Pas de contenu."}</p>
-        <button onclick="dialogBox.style.display='none'" 
-          style="margin-top:8px;padding:4px 8px;border:none;background:#444;color:#fff;border-radius:6px;">
-          Fermer
-        </button>
-      `;
-      dialogBox.style.display = "block";
-    })
-    .catch(()=> {
-      dialogBox.innerHTML = `
-        <p style="color:#f55;">⚠ Dialogue introuvable pour l'emplacement ${place.id}.</p>
-      `;
-      dialogBox.style.display = "block";
-    });
+  const dialog = DIALOGUES[place.id] || {title:"?", text:"Aucun dialogue défini"};
+  dialogBox.innerHTML = `
+    <h3 style="margin:0 0 8px 0;">${dialog.title}</h3>
+    <p>${dialog.text}</p>
+    <button onclick="dialogBox.style.display='none'" 
+      style="margin-top:8px;padding:4px 8px;border:none;background:#444;color:#fff;border-radius:6px;">
+      Fermer
+    </button>
+  `;
+  dialogBox.style.display = "block";
 }
 
-/* === GAME LOOP === */
+/* === LOOP === */
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
   if(background.complete){

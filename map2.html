@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Deuxième Map — Fonctionnelle</title>
+<title>Deuxième Map — Qualité Améliorée</title>
 <style>
   :root {
     --ui: #ffffff;
@@ -20,6 +20,7 @@
   canvas {
     border-radius: 16px;
     box-shadow: 0 20px 60px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.08);
+    /* Les dimensions max sont conservées pour la responsivité */
     max-width: 96vw;
     max-height: 92vh;
   }
@@ -54,7 +55,7 @@
 </head>
 <body>
 <div class="wrap">
-  <canvas id="game" width="960" height="600" aria-label="Deuxième zone"></canvas>
+  <canvas id="game" aria-label="Deuxième zone"></canvas>
 </div>
 <div class="hud" aria-hidden="true">
   <div><strong>Déplacements</strong> <kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd> ou <kbd>Flèches</kbd></div>
@@ -80,12 +81,34 @@ const CONFIG = {
 /* === CANVAS === */
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
+
+// ✨ AMÉLIORATION DE LA QUALITÉ POUR ÉCRANS HiDPI (Retina)
+// =======================================================
+// Définir la taille d'affichage souhaitée via JS pour assurer la cohérence
+canvas.style.width = `${CONFIG.world.width}px`;
+canvas.style.height = `${CONFIG.world.height}px`;
+
+// Obtenir le ratio de pixels de l'appareil (ex: 2 pour Retina)
+const dpr = window.devicePixelRatio || 1;
+// Obtenir la taille d'affichage réelle du canvas (depuis le CSS)
+const rect = canvas.getBoundingClientRect();
+
+// Définir la résolution interne (le nombre de pixels réels) du canvas
+canvas.width = rect.width * dpr;
+canvas.height = rect.height * dpr;
+
+// Redimensionner le contexte pour que les coordonnées de dessin restent les mêmes
+// (on dessine sur une toile plus grande sans changer nos positions x, y)
+ctx.scale(dpr, dpr);
+// =======================================================
+
+// Le lissage est toujours utile, surtout pour les images non pixel-art
 ctx.imageSmoothingEnabled = true;
 ctx.imageSmoothingQuality = "high";
 
 /* === BACKGROUND === */
 const background = new Image();
-background.src = "https://via.placeholder.com/960x600/222/eee?text=Background"; 
+background.src = "https://via.placeholder.com/960x600/222/eee?text=Background";
 background.onload = () => draw();
 
 /* === PLAYER === */
@@ -108,8 +131,9 @@ window.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
 /* === PLACES (100 emplacements) === */
 const PLACES = [];
 const cols = 10, rows = 10;
-const spacingX = CONFIG.world.width/(cols+1);
-const spacingY = CONFIG.world.height/(rows+1);
+// On utilise la taille du monde de CONFIG pour le placement
+const spacingX = CONFIG.world.width / (cols + 1);
+const spacingY = CONFIG.world.height / (rows + 1);
 const placeholderImage = "https://via.placeholder.com/40";
 
 for(let r=0; r<rows; r++){
@@ -128,9 +152,9 @@ for(let r=0; r<rows; r++){
 }
 
 /* === Exemple de personnalisation === */
-PLACES[0].image = "http://www.image-heberg.fr/files/17572931293581598550.png"; 
+PLACES[0].image = "http://www.image-heberg.fr/files/17572931293581598550.png";
 PLACES[0].text = "Petite Maison";
-PLACES[4].image = "https://via.placeholder.com/40/00ff00?text=A"; 
+PLACES[4].image = "https://via.placeholder.com/40/00ff00?text=A";
 PLACES[4].text = "Grand Arbre";
 
 /* === DESSIN === */
@@ -189,7 +213,7 @@ function openDialogue(){
       dialogBox.innerHTML = `
         <h3 style="margin:0 0 8px 0;">${data.title || "Sans titre"}</h3>
         <p>${data.text || "Pas de contenu."}</p>
-        <button onclick="dialogBox.style.display='none'" 
+        <button onclick="dialogBox.style.display='none'"
           style="margin-top:8px;padding:4px 8px;border:none;background:#444;color:#fff;border-radius:6px;">
           Fermer
         </button>
@@ -206,9 +230,10 @@ function openDialogue(){
 
 /* === GAME LOOP === */
 function draw(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // On utilise la taille du monde de CONFIG pour effacer
+  ctx.clearRect(0,0,CONFIG.world.width,CONFIG.world.height);
   if(background.complete){
-    ctx.drawImage(background,0,0,canvas.width,canvas.height);
+    ctx.drawImage(background,0,0,CONFIG.world.width,CONFIG.world.height);
   }
   drawPlaces();
   drawPlayer();

@@ -1,260 +1,137 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Deuxième Map — Qualité Améliorée</title>
-<style>
-  :root {
-    --ui: #ffffff;
-    --ui-shadow: rgba(0,0,0,.35);
-  }
-  html, body {
-    height: 100%;
-    margin: 0;
-    font-family: "Courier New", monospace;
-    background: #0d0d0f;
-    color: #dcdcdc;
-  }
-  .wrap { display: grid; place-items: center; height: 100%; }
-  canvas {
-    border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.08);
-    /* Les dimensions max sont conservées pour la responsivité */
-    max-width: 96vw;
-    max-height: 92vh;
-  }
-  .hud {
-    position: fixed; inset: 16px auto auto 16px; color: var(--ui);
-    text-shadow: 0 2px 6px var(--ui-shadow);
-    user-select: none; font-size: 14px; line-height: 1.25;
-  }
-  .hud kbd {
-    background: rgba(255,255,255,.18);
-    border: 1px solid rgba(255,255,255,.35);
-    padding: 2px 6px; border-radius: 6px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.35);
-    margin-right: 4px;
-  }
-  #prompt {
-    position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
-    color: var(--ui); font-weight: 600; letter-spacing: .2px;
-    padding: 8px 12px; border-radius: 10px;
-    background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.35);
-    display: none; white-space: nowrap; text-shadow: 0 2px 6px var(--ui-shadow);
-  }
-  #dialogBox {
-    position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%);
-    background: rgba(0,0,0,.85); color: #fff;
-    padding: 16px; border-radius: 12px;
-    border: 1px solid rgba(255,255,255,.3);
-    width: 400px; max-width: 90%;
-    display: none;
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Carte avec 100 emplacements</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+    }
+
+    h1 {
+      text-align: center;
+      padding: 20px;
+    }
+
+    /* Grille de 10x10 = 100 emplacements */
+    .map {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      grid-gap: 10px;
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .spot {
+      position: relative;
+      cursor: pointer;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      transition: transform 0.2s;
+      background: white;
+    }
+
+    .spot:hover {
+      transform: scale(1.05);
+    }
+
+    .spot img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Fenêtre modale */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      padding-top: 100px;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background: rgba(0,0,0,0.6);
+    }
+
+    .modal-content {
+      background: #fff;
+      margin: auto;
+      padding: 20px;
+      border-radius: 10px;
+      width: 80%;
+      max-width: 600px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close:hover {
+      color: #000;
+    }
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <canvas id="game" aria-label="Deuxième zone"></canvas>
-</div>
-<div class="hud" aria-hidden="true">
-  <div><strong>Déplacements</strong> <kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd> ou <kbd>Flèches</kbd></div>
-  <div><strong>Interaction</strong> <kbd>E</kbd></div>
-</div>
-<div id="prompt"></div>
-<div id="dialogBox"></div>
+  <h1>Carte avec 100 emplacements</h1>
+  <div class="map" id="map"></div>
 
-<script>
-/* === CONFIG === */
-const CONFIG = {
-  world: { width: 960, height: 600 },
-  player: {
-    size: 32,
-    color: '#ffd166',
-    outline: 'rgba(0,0,0,.45)',
-    speed: 2.6,
-    start: { x: 480, y: 300 },
-    image: "https://via.placeholder.com/64"
-  }
-};
+  <!-- Modale -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2 id="modal-title"></h2>
+      <p id="modal-text"></p>
+    </div>
+  </div>
 
-/* === CANVAS === */
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
+  <script>
+    // ----------------------
+    // CONFIGURATION FACILE :
+    // ----------------------
+    const spotsData = Array.from({length: 100}, (_, i) => ({
+      title: "Emplacement " + (i+1),
+      text: "Ceci est le texte pour l’emplacement " + (i+1),
+      image: "https://via.placeholder.com/150?text=" + (i+1) // change URL de l'image ici
+    }));
 
-// ✨ AMÉLIORATION DE LA QUALITÉ POUR ÉCRANS HiDPI (Retina)
-// =======================================================
-// Définir la taille d'affichage souhaitée via JS pour assurer la cohérence
-canvas.style.width = `${CONFIG.world.width}px`;
-canvas.style.height = `${CONFIG.world.height}px`;
-
-// Obtenir le ratio de pixels de l'appareil (ex: 2 pour Retina)
-const dpr = window.devicePixelRatio || 1;
-// Obtenir la taille d'affichage réelle du canvas (depuis le CSS)
-const rect = canvas.getBoundingClientRect();
-
-// Définir la résolution interne (le nombre de pixels réels) du canvas
-canvas.width = rect.width * dpr;
-canvas.height = rect.height * dpr;
-
-// Redimensionner le contexte pour que les coordonnées de dessin restent les mêmes
-// (on dessine sur une toile plus grande sans changer nos positions x, y)
-ctx.scale(dpr, dpr);
-// =======================================================
-
-// Le lissage est toujours utile, surtout pour les images non pixel-art
-ctx.imageSmoothingEnabled = true;
-ctx.imageSmoothingQuality = "high";
-
-/* === BACKGROUND === */
-const background = new Image();
-background.src = "https://via.placeholder.com/960x600/222/eee?text=Background";
-background.onload = () => draw();
-
-/* === PLAYER === */
-const playerImg = new Image();
-playerImg.src = CONFIG.player.image;
-const player = {x:CONFIG.player.start.x, y:CONFIG.player.start.y, r:CONFIG.player.size};
-
-const TAU = Math.PI*2;
-const keys = new Set();
-const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
-
-window.addEventListener('keydown', e => {
-  const k = e.key.toLowerCase();
-  if(['z','q','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(k)) e.preventDefault();
-  keys.add(k);
-  if(k==='e') openDialogue();
-});
-window.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
-
-/* === PLACES (100 emplacements) === */
-const PLACES = [];
-const cols = 10, rows = 10;
-// On utilise la taille du monde de CONFIG pour le placement
-const spacingX = CONFIG.world.width / (cols + 1);
-const spacingY = CONFIG.world.height / (rows + 1);
-const placeholderImage = "https://via.placeholder.com/40";
-
-for(let r=0; r<rows; r++){
-  for(let c=0; c<cols; c++){
-    const id = r*cols+c+1;
-    const px = (c+1)*spacingX;
-    const py = (r+1)*spacingY;
-    PLACES.push({
-      id,
-      x:px, y:py, size:40,
-      image: placeholderImage,
-      text: "Emplacement " + id,
-      imgObj: null
+    // Création des emplacements
+    const mapContainer = document.getElementById("map");
+    spotsData.forEach((spot, index) => {
+      const div = document.createElement("div");
+      div.classList.add("spot");
+      div.innerHTML = `<img src="${spot.image}" alt="Spot ${index+1}">`;
+      div.addEventListener("click", () => openModal(spot));
+      mapContainer.appendChild(div);
     });
-  }
-}
 
-/* === Exemple de personnalisation === */
-PLACES[0].image = "http://www.image-heberg.fr/files/17572931293581598550.png";
-PLACES[0].text = "Petite Maison";
-PLACES[4].image = "https://via.placeholder.com/40/00ff00?text=A";
-PLACES[4].text = "Grand Arbre";
+    // Gestion modale
+    const modal = document.getElementById("modal");
+    const modalTitle = document.getElementById("modal-title");
+    const modalText = document.getElementById("modal-text");
+    const closeBtn = document.querySelector(".close");
 
-/* === DESSIN === */
-function drawPlaces(){
-  for(const place of PLACES){
-    if(!place.imgObj){
-      place.imgObj = new Image();
-      place.imgObj.src = place.image;
+    function openModal(spot) {
+      modalTitle.textContent = spot.title;
+      modalText.textContent = spot.text;
+      modal.style.display = "block";
     }
-    if(place.imgObj.complete){
-      ctx.drawImage(place.imgObj, place.x-place.size/2, place.y-place.size/2, place.size, place.size);
+
+    closeBtn.onclick = () => { modal.style.display = "none"; }
+    window.onclick = (event) => {
+      if (event.target === modal) modal.style.display = "none";
     }
-  }
-}
-function drawPlayer(){
-  if(playerImg.complete){
-    ctx.drawImage(playerImg, player.x-player.r, player.y-player.r, player.r*2, player.r*2);
-  } else {
-    ctx.beginPath();
-    ctx.arc(player.x, player.y, player.r, 0, TAU);
-    ctx.fillStyle = CONFIG.player.color; ctx.fill();
-    ctx.lineWidth = 2; ctx.strokeStyle = CONFIG.player.outline; ctx.stroke();
-  }
-}
-
-/* === INTERACTIONS === */
-const promptEl = document.getElementById("prompt");
-const dialogBox = document.getElementById("dialogBox");
-
-function getNearbyPlace(){
-  let nearest=null, bestDist=Infinity;
-  for(const p of PLACES){
-    const dist=Math.hypot(player.x-p.x, player.y-p.y);
-    if(dist<bestDist){ bestDist=dist; nearest=p; }
-  }
-  if(bestDist<50) return nearest;
-  return null;
-}
-function updatePrompt(){
-  const place = getNearbyPlace();
-  if(place){
-    promptEl.style.display='block';
-    promptEl.textContent = place.text + " (E pour interagir)";
-  } else {
-    promptEl.style.display='none';
-  }
-}
-function openDialogue(){
-  const place = getNearbyPlace();
-  if(!place) return;
-
-  const url = `dialogues/${place.id}.json`;
-  fetch(url)
-    .then(r => r.json())
-    .then(data => {
-      dialogBox.innerHTML = `
-        <h3 style="margin:0 0 8px 0;">${data.title || "Sans titre"}</h3>
-        <p>${data.text || "Pas de contenu."}</p>
-        <button onclick="dialogBox.style.display='none'"
-          style="margin-top:8px;padding:4px 8px;border:none;background:#444;color:#fff;border-radius:6px;">
-          Fermer
-        </button>
-      `;
-      dialogBox.style.display = "block";
-    })
-    .catch(()=> {
-      dialogBox.innerHTML = `
-        <p style="color:#f55;">⚠ Dialogue introuvable pour l'emplacement ${place.id}.</p>
-      `;
-      dialogBox.style.display = "block";
-    });
-}
-
-/* === GAME LOOP === */
-function draw(){
-  // On utilise la taille du monde de CONFIG pour effacer
-  ctx.clearRect(0,0,CONFIG.world.width,CONFIG.world.height);
-  if(background.complete){
-    ctx.drawImage(background,0,0,CONFIG.world.width,CONFIG.world.height);
-  }
-  drawPlaces();
-  drawPlayer();
-}
-function loop(){
-  let dx=0, dy=0;
-  if(keys.has('z')||keys.has('arrowup')) dy-=1;
-  if(keys.has('s')||keys.has('arrowdown')) dy+=1;
-  if(keys.has('q')||keys.has('arrowleft')) dx-=1;
-  if(keys.has('d')||keys.has('arrowright')) dx+=1;
-  const len=Math.hypot(dx,dy)||1;
-  dx=dx/len*CONFIG.player.speed;
-  dy=dy/len*CONFIG.player.speed;
-  player.x = clamp(player.x+dx, player.r, CONFIG.world.width-player.r);
-  player.y = clamp(player.y+dy, player.r, CONFIG.world.height-player.r);
-
-  draw();
-  updatePrompt();
-  requestAnimationFrame(loop);
-}
-loop();
-</script>
+  </script>
 </body>
 </html>

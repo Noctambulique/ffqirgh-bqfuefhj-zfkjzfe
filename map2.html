@@ -17,10 +17,10 @@
     /* Grille flexible (auto) */
     .map {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* plus petit */
       grid-gap: 10px;
       padding: 20px;
-      max-width: 1200px;
+      max-width: 1000px;
       margin: auto;
     }
     .spot {
@@ -34,7 +34,8 @@
     .spot:hover { transform: scale(1.05); }
     .spot img {
       width: 100%;
-      height: auto;
+      height: 80px; /* hauteur fixe pour réduire */
+      object-fit: cover; /* recadre joliment */
       display: block;
     }
     /* Fenêtre modale */
@@ -53,15 +54,28 @@
       padding: 20px;
       border-radius: 10px;
       width: 80%; max-width: 600px;
+      max-height: 80vh; /* limite la hauteur */
+      overflow-y: auto; /* ajout scrollbar si texte trop long */
     }
     .close {
       color: #aaa;
       float: right;
-      font-size: 28px;
+      font-size: 24px;
       font-weight: bold;
       cursor: pointer;
     }
     .close:hover { color: #000; }
+
+    /* Ajuste la taille du texte */
+    #modal-title {
+      font-size: 20px;
+      margin-top: 0;
+    }
+    #modal-text {
+      font-size: 14px;
+      line-height: 1.5;
+      white-space: pre-wrap; /* garde les retours à la ligne éventuels */
+    }
   </style>
 </head>
 <body>
@@ -102,15 +116,6 @@
         text: "Un beau lac bleu entouré de montagnes.",
         image: "https://via.placeholder.com/150?text=Lac"
       }
-      // 👉 Pour ajouter un emplacement :
-      // Copie-colle ce bloc ↓ après la virgule
-      /*
-      {
-        title: "Nom de l'endroit",
-        text: "Texte que tu veux afficher",
-        image: "URL_de_ton_image"
-      }
-      */
     ];
 
     // Génération auto de la carte

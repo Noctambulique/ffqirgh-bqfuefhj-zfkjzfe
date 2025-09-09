@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Carte personnalisée</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+    }
+    h1 {
+      text-align: center;
+      padding: 20px;
+    }
+    /* Grille flexible (auto) */
+    .map {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      grid-gap: 10px;
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+    .spot {
+      cursor: pointer;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      transition: transform 0.2s;
+      background: white;
+    }
+    .spot:hover { transform: scale(1.05); }
+    .spot img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    /* Fenêtre modale */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      padding-top: 100px;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+    }
+    .modal-content {
+      background: #fff;
+      margin: auto;
+      padding: 20px;
+      border-radius: 10px;
+      width: 80%; max-width: 600px;
+    }
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close:hover { color: #000; }
+  </style>
+</head>
+<body>
+  <h1>Carte personnalisée</h1>
+  <div class="map" id="map"></div>
+
+  <!-- Modale -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2 id="modal-title"></h2>
+      <p id="modal-text"></p>
+    </div>
+  </div>
+
+  <script>
+    // ----------------------
+    // 🔧 PERSONNALISATION :
+    // ----------------------
+    const spotsData = [
+      {
+        title: "Château",
+        text: "Voici le château principal de la carte.",
+        image: "Image1.jpg"
+      },
+      {
+        title: "Village",
+        text: "Un petit village avec des habitants chaleureux.",
+        image: "https://via.placeholder.com/150?text=Village"
+      },
+      {
+        title: "Forêt",
+        text: "Une grande forêt mystérieuse pleine de secrets.",
+        image: "https://via.placeholder.com/150?text=Foret"
+      },
+      {
+        title: "Lac",
+        text: "Un beau lac bleu entouré de montagnes.",
+        image: "https://via.placeholder.com/150?text=Lac"
+      }
+      // 👉 Pour ajouter un emplacement :
+      // Copie-colle ce bloc ↓ après la virgule
+      /*
+      {
+        title: "Nom de l'endroit",
+        text: "Texte que tu veux afficher",
+        image: "URL_de_ton_image"
+      }
+      */
+    ];
+
+    // Génération auto de la carte
+    const mapContainer = document.getElementById("map");
+    spotsData.forEach((spot, index) => {
+      const div = document.createElement("div");
+      div.classList.add("spot");
+      div.innerHTML = `<img src="${spot.image}" alt="Spot ${index+1}">`;
+      div.addEventListener("click", () => openModal(spot));
+      mapContainer.appendChild(div);
+    });
+
+    // Gestion de la modale
+    const modal = document.getElementById("modal");
+    const modalTitle = document.getElementById("modal-title");
+    const modalText = document.getElementById("modal-text");
+    const closeBtn = document.querySelector(".close");
+
+    function openModal(spot) {
+      modalTitle.textContent = spot.title;
+      modalText.textContent = spot.text;
+      modal.style.display = "block";
+    }
+    closeBtn.onclick = () => { modal.style.display = "none"; }
+    window.onclick = (event) => {
+      if (event.target === modal) modal.style.display = "none";
+    }
+  </script>
+</body>
+</html>

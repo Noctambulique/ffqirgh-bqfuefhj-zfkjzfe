@@ -1,0 +1,139 @@
+﻿:root {
+  --map-background: #f0f0f0;
+  --map-text: #111111;
+  --map-title-color: #111111;
+  --map-spot-background: #ffffff;
+  --map-spot-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  --map-modal-overlay: rgba(0, 0, 0, 0.6);
+  --map-modal-background: #ffffff;
+}
+
+body {
+  margin: 0;
+  font-family: "Arial", sans-serif;
+  background: var(--map-background);
+  color: var(--map-text);
+}
+
+body.map-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+body[data-map-theme="forest"] {
+  --map-background: #2e6b2e;
+  --map-text: #f4f4f4;
+  --map-title-color: #d4ffd4;
+  --map-spot-shadow: none;
+}
+
+header.map-page__header {
+  padding: 24px 16px 12px;
+  text-align: center;
+}
+
+.map-page__title {
+  margin: 0;
+  font-size: clamp(1.6rem, 2.4vw, 2.6rem);
+  color: var(--map-title-color);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+main.map-page__content {
+  width: min(1000px, 100%);
+  margin: 0 auto;
+  padding: 0 16px 32px;
+}
+
+.map-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 16px;
+}
+
+.map-spot {
+  cursor: pointer;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--map-spot-background);
+  box-shadow: var(--map-spot-shadow);
+  transition: transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+
+.map-spot:hover,
+.map-spot:focus-visible {
+  transform: translateY(-3px) scale(1.03);
+  outline: none;
+}
+
+.map-spot img {
+  width: 100%;
+  height: 96px;
+  object-fit: contain;
+}
+
+.map-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  place-items: center;
+  padding: 24px;
+  background: var(--map-modal-overlay);
+  z-index: 10;
+}
+
+.map-modal.is-visible {
+  display: grid;
+}
+
+.map-modal__content {
+  background: var(--map-modal-background);
+  color: #1a1a1a;
+  border-radius: 14px;
+  max-width: 640px;
+  width: min(640px, 90vw);
+  max-height: min(80vh, 720px);
+  padding: 24px 28px;
+  position: relative;
+  overflow-y: auto;
+}
+
+.map-modal__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.map-modal__title {
+  margin: 0 0 12px;
+  font-size: 1.5rem;
+  color: inherit;
+}
+
+.map-modal__text {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 600px) {
+  .map-spot img {
+    height: 80px;
+  }
+
+  .map-modal__content {
+    padding: 20px;
+  }
+}

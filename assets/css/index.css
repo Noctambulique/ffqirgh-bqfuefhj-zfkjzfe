@@ -1,0 +1,151 @@
+﻿:root {
+  --surface-background: #0d0d0f;
+  --surface-text: #dcdcdc;
+  --ui-foreground: #ffffff;
+  --ui-shadow: rgba(0, 0, 0, 0.35);
+  --lockscreen-background: radial-gradient(circle at center, #1a1a20 0%, #000 100%);
+  --prompt-background: rgba(0, 0, 0, 0.35);
+  --prompt-border: rgba(255, 255, 255, 0.35);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: "Courier New", monospace;
+  background: var(--surface-background);
+  color: var(--surface-text);
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+#lockscreen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  background: var(--lockscreen-background);
+  padding: 32px 16px;
+}
+
+#lockscreen h1 {
+  margin: 0;
+  font-size: 2rem;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.25);
+}
+
+#lockscreen p {
+  margin: 0;
+  font-size: 1rem;
+  opacity: 0.85;
+  max-width: 420px;
+}
+
+#lockscreen input {
+  width: min(280px, 80vw);
+  padding: 10px 14px;
+  border: 1px solid #444;
+  border-radius: 6px;
+  background: #111;
+  color: #eee;
+  font-family: inherit;
+  font-size: 1rem;
+  letter-spacing: 1px;
+  outline: none;
+  box-shadow: 0 0 12px rgba(0, 255, 150, 0.3);
+  text-align: center;
+}
+
+#lockscreen button {
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: 1px solid #0f0;
+  background: #111;
+  color: #0f0;
+  font-family: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+#lockscreen button:hover,
+#lockscreen button:focus-visible {
+  background: #0f0;
+  color: #000;
+  transform: translateY(-1px);
+}
+
+#error {
+  color: #f55;
+  min-height: 1.2em;
+  font-size: 0.95rem;
+  display: none;
+}
+
+.wrap {
+  display: none;
+  place-items: center;
+  flex: 1;
+  padding: 16px;
+}
+
+canvas {
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35), inset 0 0 0 2px rgba(255, 255, 255, 0.08);
+  max-width: 96vw;
+  max-height: 92vh;
+}
+
+.hud {
+  position: fixed;
+  inset: 16px auto auto 16px;
+  color: var(--ui-foreground);
+  text-shadow: 0 2px 6px var(--ui-shadow);
+  user-select: none;
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.hud kbd {
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 2px 6px;
+  border-radius: 6px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  margin-right: 4px;
+}
+
+.prompt {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  color: var(--ui-foreground);
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--prompt-background);
+  border: 1px solid var(--prompt-border);
+  text-shadow: 0 2px 6px var(--ui-shadow);
+  display: none;
+  white-space: nowrap;
+}
+
+.prompt kbd {
+  margin: 0 4px;
+}

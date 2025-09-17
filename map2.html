@@ -13,11 +13,12 @@
     h1 {
       text-align: center;
       padding: 20px;
+      color: white;
     }
     /* Grille flexible (auto) */
     .map {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* plus petit */
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
       grid-gap: 10px;
       padding: 20px;
       max-width: 1000px;
@@ -27,15 +28,23 @@
       cursor: pointer;
       border-radius: 10px;
       overflow: hidden;
-      box-shadow: none;
       transition: transform 0.2s;
+      background: white;
+      padding: 5px;
+      text-align: center;
     }
     .spot:hover { transform: scale(1.05); }
     .spot img {
       width: 100%;
-      height: 80px; /* hauteur fixe pour réduire */
-      object-fit: contain; /* recadre joliment */
+      height: 80px;
+      object-fit: contain;
       display: block;
+      margin: auto;
+    }
+    .spot-title {
+      font-size: 12px;
+      margin-top: 5px;
+      color: #333;
     }
     /* Fenêtre modale */
     .modal {
@@ -53,8 +62,8 @@
       padding: 20px;
       border-radius: 10px;
       width: 80%; max-width: 600px;
-      max-height: 80vh; /* limite la hauteur */
-      overflow-y: auto; /* ajout scrollbar si texte trop long */
+      max-height: 80vh;
+      overflow-y: auto;
     }
     .close {
       color: #aaa;
@@ -65,7 +74,6 @@
     }
     .close:hover { color: #000; }
 
-    /* Ajuste la taille du texte */
     #modal-title {
       font-size: 20px;
       margin-top: 0;
@@ -73,10 +81,8 @@
     #modal-text {
       font-size: 14px;
       line-height: 1.5;
-      white-space: pre-wrap; /* garde les retours à la ligne éventuels */
+      white-space: pre-wrap;
     }
-
-    /* Ajout style image modale */
     #modal-image {
       max-width: 100%;
       height: auto;
@@ -94,7 +100,6 @@
   <div id="modal" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
-      <!-- 🔹 AJOUT : image affichée dans la modale -->
       <img id="modal-image" src="" alt="">
       <h2 id="modal-title"></h2>
       <p id="modal-text"></p>
@@ -109,8 +114,16 @@
       {
         title: "Rien",
         text: "Une grande forêt mystérieuse pleine de secrets.",
-        image: "Philo/Vert.png"
+        thumb: "Philo/miniature1.png",   // image miniature (grille)
+        image: "Philo/illustration1.png" // illustration (modale)
+      },
+      {
+        title: "Âme",
+        text: "La notion d’âme est présente dans toutes les cultures...",
+        thumb: "Philo/miniature2.png",
+        image: "Philo/illustration2.png"
       }
+      // 👉 ajoute autant d’objets que tu veux
     ];
 
     // Génération auto de la carte
@@ -118,7 +131,13 @@
     spotsData.forEach((spot, index) => {
       const div = document.createElement("div");
       div.classList.add("spot");
-      div.innerHTML = `<img src="${spot.image}" alt="Spot ${index+1}">`;
+
+      // 👉 miniature dans la grille
+      div.innerHTML = `
+        <img src="${spot.thumb}" alt="Miniature ${index+1}">
+        <div class="spot-title">${spot.title}</div>
+      `;
+
       div.addEventListener("click", () => openModal(spot));
       mapContainer.appendChild(div);
     });
@@ -127,16 +146,17 @@
     const modal = document.getElementById("modal");
     const modalTitle = document.getElementById("modal-title");
     const modalText = document.getElementById("modal-text");
-    const modalImage = document.getElementById("modal-image"); // 🔹 AJOUT
+    const modalImage = document.getElementById("modal-image");
     const closeBtn = document.querySelector(".close");
 
     function openModal(spot) {
       modalTitle.textContent = spot.title;
       modalText.textContent = spot.text;
-      modalImage.src = spot.image;    // 🔹 AJOUT : affiche l’image
-      modalImage.alt = spot.title;    // 🔹 AJOUT : accessibilité
+      modalImage.src = spot.image;   // illustration affichée en haut
+      modalImage.alt = spot.title;
       modal.style.display = "block";
     }
+
     closeBtn.onclick = () => { modal.style.display = "none"; }
     window.onclick = (event) => {
       if (event.target === modal) modal.style.display = "none";

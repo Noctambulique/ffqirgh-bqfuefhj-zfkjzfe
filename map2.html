@@ -75,6 +75,15 @@
       line-height: 1.5;
       white-space: pre-wrap; /* garde les retours à la ligne éventuels */
     }
+
+    /* Ajout style image modale */
+    #modal-image {
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 15px;
+      display: block;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
@@ -85,6 +94,8 @@
   <div id="modal" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
+      <!-- 🔹 AJOUT : image affichée dans la modale -->
+      <img id="modal-image" src="" alt="">
       <h2 id="modal-title"></h2>
       <p id="modal-text"></p>
     </div>
@@ -116,11 +127,14 @@
     const modal = document.getElementById("modal");
     const modalTitle = document.getElementById("modal-title");
     const modalText = document.getElementById("modal-text");
+    const modalImage = document.getElementById("modal-image"); // 🔹 AJOUT
     const closeBtn = document.querySelector(".close");
 
     function openModal(spot) {
       modalTitle.textContent = spot.title;
       modalText.textContent = spot.text;
+      modalImage.src = spot.image;    // 🔹 AJOUT : affiche l’image
+      modalImage.alt = spot.title;    // 🔹 AJOUT : accessibilité
       modal.style.display = "block";
     }
     closeBtn.onclick = () => { modal.style.display = "none"; }

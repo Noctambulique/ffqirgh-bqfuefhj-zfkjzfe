@@ -18,8 +18,8 @@
       2: 'ampleFolder/Lubies.pdf',
       3: 'ampleFolder/Power Point Ultime +.pdf',
       4: 'ampleFolder/Bio Croisé Octavie Basile.pdf',
-      5: 'map3.html',
-      6: 'map2.html',
+      5: 'map2.html',
+      6: 'map3.html',
     },
   },
   names: {
@@ -27,8 +27,8 @@
     2: 'Centre des Lubies',
     3: 'Maison du Détective',
     4: 'Dictionnire',
-    4: 'Ordre des bibliothécaires',
-    6: 'Centre des Archives',
+    5: 'Centre des Archives',
+    6: 'Ordre des bibliothécaires',
   },
 });
 
@@ -42,4 +42,5 @@ export const HOUSE_IMAGES = [
 ];
 
 export const BACKGROUND_SRC = 'http://www.image-heberg.fr/files/17570213431743313302.png';
+
 

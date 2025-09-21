@@ -27,7 +27,7 @@
       1: 'Centre Culturel',
       2: 'Centre des Lubies',
       3: 'Maison du Détective',
-      4: 'Musée des Domus',
+      4: 'Dictionnaire',
       5: 'Centre des Archives',
       6: 'Ordre des bibliothécaires',
     },
@@ -517,5 +517,6 @@
     }
   });
 })();
+
 
 

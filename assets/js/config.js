@@ -17,7 +17,7 @@
       1: 'ampleFolder/Film Art Jeu.pdf',
       2: 'ampleFolder/Lubies.pdf',
       3: 'ampleFolder/Power Point Ultime +.pdf',
-      4: 'ampleFolder/Bio Croisé Octavie Basile.pdf',
+      4: 'ampleFolder/Dictionnaire.pdf',
       5: 'map2.html',
       6: 'map3.html',
     },
@@ -42,6 +42,7 @@ export const HOUSE_IMAGES = [
 ];
 
 export const BACKGROUND_SRC = 'http://www.image-heberg.fr/files/17570213431743313302.png';
+
 
 
 

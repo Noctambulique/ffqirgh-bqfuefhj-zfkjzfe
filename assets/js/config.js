@@ -26,7 +26,7 @@
     1: 'Centre Culturel',
     2: 'Centre des Lubies',
     3: 'Maison du Détective',
-    4: 'Dictionnire',
+    4: 'Dictionnaire',
     5: 'Centre des Archives',
     6: 'Ordre des bibliothécaires',
   },
@@ -42,5 +42,6 @@ export const HOUSE_IMAGES = [
 ];
 
 export const BACKGROUND_SRC = 'http://www.image-heberg.fr/files/17570213431743313302.png';
+
 
 

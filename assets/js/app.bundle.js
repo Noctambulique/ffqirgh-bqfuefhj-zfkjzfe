@@ -3,7 +3,7 @@
     world: { width: 960, height: 600 },
     center: { x: 480, y: 300 },
     circleRadius: 180,
-    houseCount: 7,
+    houseCount: 6,
     house: { size: 130 },
     player: {
       size: 32,
@@ -517,4 +517,5 @@
     }
   });
 })();
+
 

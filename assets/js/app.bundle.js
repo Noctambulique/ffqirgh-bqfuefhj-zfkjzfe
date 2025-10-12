@@ -2,7 +2,7 @@
   const CONFIG = Object.freeze({
     world: { width: 960, height: 600 },
     center: { x: 480, y: 300 },
-    circleRadius: 150,
+    circleRadius: 120,
     houseCount: 5,
     house: { size: 130 },
     player: {
@@ -514,6 +514,7 @@
     }
   });
 })();
+
 
 
 

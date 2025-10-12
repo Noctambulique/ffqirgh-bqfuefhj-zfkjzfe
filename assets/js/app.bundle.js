@@ -3,7 +3,7 @@
     world: { width: 960, height: 600 },
     center: { x: 480, y: 300 },
     circleRadius: 180,
-    houseCount: 6,
+    houseCount: 5,
     house: { size: 130 },
     player: {
       size: 32,
@@ -18,18 +18,16 @@
         1: 'ampleFolder/Film Art Jeu.pdf',
         2: 'ampleFolder/Lubies.pdf',
         3: 'ampleFolder/Power Point Ultime +.pdf',
-        4: 'ampleFolder/Dictionnaire.pdf',
-        5: 'map2.html',
-        6: 'map3.html',
+        4: 'map2.html',
+        5: 'map3.html',
       },
     },
     names: {
       1: 'Médiathèque',
       2: 'Centre des Lubies',
       3: 'Bureau du Détective',
-      4: 'Musée des Songes',
-      5: 'Centre des Archives',
-      6: 'Hotel des Libraires',
+      4: 'Centre des Archives',
+      5: 'Hotel des Libraires',
     },
   });
 
@@ -37,7 +35,6 @@
   'House/Médiathèque.png',
   'House/CentredesLubies.png',
   'House/BureauDuDetective.png',
-  'House/MuséeDesSonges.png',
   'House/QGPhilosophe.png',
   "House/HoteldesLibraires.png",
   ];
@@ -517,6 +514,7 @@
     }
   });
 })();
+
 
 
 

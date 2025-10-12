@@ -1,7 +1,7 @@
 ﻿export const CONFIG = Object.freeze({
   world: { width: 960, height: 600 },
   center: { x: 480, y: 300 },
-  circleRadius: 160,
+  circleRadius: 150,
   houseCount: 6,
   house: { size: 130 },
   player: {
@@ -39,6 +39,7 @@ export const HOUSE_IMAGES = [
 ];
 
 export const BACKGROUND_SRC = 'http://www.image-heberg.fr/files/17570213431743313302.png';
+
 
 
 

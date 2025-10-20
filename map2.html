@@ -8,35 +8,41 @@
     body { margin: 0; font-family: Arial, sans-serif; background: #2E6B2E; }
     h1 { text-align:center; padding:20px; color:#fff; }
 
-    /* Grille flexible (auto) */
+    /* --- LAY-OUT : use flexbox so each card can size to its content --- */
     .map {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      grid-gap: 12px;
+      display: flex;               /* <-- changed: flex instead of grid */
+      flex-wrap: wrap;            /* allow multiple rows */
+      gap: 12px;                  /* spacing between items */
       padding: 20px;
       max-width: 1000px;
       margin: auto;
+      justify-content: center;    /* center the whole collection */
       position: relative;
     }
 
     .spot {
       cursor: pointer;
       border-radius: 10px;
-      overflow: hidden;
+      overflow: visible;          /* allow image overflow if desired */
       transition: transform 0.2s;
       background: white;
       padding: 8px;
       text-align: center;
       box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+      display: inline-flex;       /* size to content */
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
     }
     .spot:hover { transform: scale(1.03); }
-    .spot-title { font-size: 13px; margin-top:6px; color:#333; }
+    .spot-title { font-size: 13px; margin-top:0; color:#333; }
 
-    /* Ajout : permet aux images de prendre dynamiquement la taille définie en JS */
+    /* L'image prendra la taille fournie par le JS (inline style). */
     .spot img {
       display: block;
       margin: 0 auto;
       object-fit: contain;
+      /* pas de max-width ici — la taille est contrôlée par le style inline */
     }
 
     /* classe pour marqueurs absolus (si utilisés) */
@@ -56,7 +62,6 @@
     .close { color:#aaa; float:right; font-size:24px; font-weight:bold; cursor:pointer; }
     .close:hover { color:#000; }
 
-    /* La grande image dans la modale doit rester responsive et ne pas être forcée à la taille de la miniature */
     #modal-image { max-width:100%; height:auto; display:block; margin-bottom:12px; border-radius:8px; }
     #modal-title { margin:0 0 8px 0; font-size:20px; }
     #modal-text { white-space: pre-wrap; line-height:1.4; color:#222; }
@@ -77,7 +82,6 @@
 
   <script>
   document.addEventListener("DOMContentLoaded", () => {
-    // Exemple : chaque spot a son thumb (miniature), son image (pour modale) et sa size (taille de la miniature)
     const spotsData = [
       {
         title: "Bonheur",

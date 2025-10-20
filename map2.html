@@ -232,51 +232,67 @@
       }
     ];
 
-    spotsData.forEach((spot, index) => {
-  const div = document.createElement("div");
-  div.classList.add("spot");
+  // --- IMPORTANT : récupère le container (défini dans ton HTML : <div class="map" id="map"></div>) ---
+  const mapContainer = document.getElementById("map");
 
-  // Taille personnalisée (par défaut 80px si non définie)
-  const size = spot.size || 80;
+  // Si tu veux permettre des marqueurs absolus, assure-toi que le conteneur est relatif
+  // (ajoute ceci dans ton CSS si tu comptes utiliser x/y)
+  // .map { position: relative; }
+  mapContainer.style.position = mapContainer.style.position || "relative";
 
-  // 👉 miniature dans la grille
-  div.innerHTML = `
-    <img src="${spot.thumb}" alt="Miniature ${index+1}" 
-         style="width:${size}px; height:${size}px; 
-                margin-left:${-size/2}px; margin-top:${-size/2}px;">
-    <div class="spot-title">${spot.title}</div>
-  `;
+  spotsData.forEach((spot, index) => {
+    const size = spot.size || 80;
 
-  // Position sur la carte (si tu as des coordonnées x,y)
-  if (spot.x && spot.y) {
-    div.style.position = "absolute";
-    div.style.left = spot.x + "px";
-    div.style.top = spot.y + "px";
+    // Si spot.x && spot.y sont définis → crée un marqueur absolu
+    if (typeof spot.x === "number" && typeof spot.y === "number") {
+      const img = document.createElement("img");
+      img.src = spot.thumb;
+      img.alt = spot.title;
+      img.style.position = "absolute";
+      img.style.left = spot.x + "px";
+      img.style.top = spot.y + "px";
+      img.style.width = size + "px";
+      img.style.height = size + "px";
+      // recentrer le point (ancre au centre)
+      img.style.marginLeft = -(size / 2) + "px";
+      img.style.marginTop = -(size / 2) + "px";
+      img.classList.add("spot-marker"); // utile si tu veux styliser les marqueurs
+      img.addEventListener("click", () => openModal(spot));
+      mapContainer.appendChild(img);
+      return;
+    }
+
+    // Sinon → miniature pour la grille
+    const div = document.createElement("div");
+    div.classList.add("spot");
+    div.innerHTML = `
+      <img src="${spot.thumb}" alt="Miniature ${index+1}" 
+           style="width:${size}px; height:${size}px; object-fit:contain; display:block; margin:0 auto;">
+      <div class="spot-title">${spot.title}</div>
+    `;
+    div.addEventListener("click", () => openModal(spot));
+    mapContainer.appendChild(div);
+  });
+
+  // --- Modale (ton code existant) ---
+  const modal = document.getElementById("modal");
+  const modalTitle = document.getElementById("modal-title");
+  const modalText = document.getElementById("modal-text");
+  const modalImage = document.getElementById("modal-image");
+  const closeBtn = document.querySelector(".close");
+
+  function openModal(spot) {
+    modalTitle.textContent = spot.title;
+    modalText.textContent = spot.text;
+    modalImage.src = spot.image;
+    modalImage.alt = spot.title;
+    modal.style.display = "block";
   }
 
-  div.addEventListener("click", () => openModal(spot));
-  mapContainer.appendChild(div);
-});
-
-    // Gestion de la modale
-    const modal = document.getElementById("modal");
-    const modalTitle = document.getElementById("modal-title");
-    const modalText = document.getElementById("modal-text");
-    const modalImage = document.getElementById("modal-image");
-    const closeBtn = document.querySelector(".close");
-
-    function openModal(spot) {
-      modalTitle.textContent = spot.title;
-      modalText.textContent = spot.text;
-      modalImage.src = spot.image;   // illustration affichée en haut
-      modalImage.alt = spot.title;
-      modal.style.display = "block";
-    }
-
-    closeBtn.onclick = () => { modal.style.display = "none"; }
-    window.onclick = (event) => {
-      if (event.target === modal) modal.style.display = "none";
-    }
-  </script>
+  closeBtn.onclick = () => { modal.style.display = "none"; }
+  window.onclick = (event) => {
+    if (event.target === modal) modal.style.display = "none";
+  }
+</script>
 </body>
 </html>

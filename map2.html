@@ -33,6 +33,13 @@
     .spot:hover { transform: scale(1.03); }
     .spot-title { font-size: 13px; margin-top:6px; color:#333; }
 
+/* Ajout : permet aux images de prendre dynamiquement la taille définie en JS */
+.spot img {
+  display: block;
+  margin: 0 auto;
+  object-fit: contain;
+}
+    
     /* classe pour marqueurs absolus (si utilisés) */
     .spot-marker {
       cursor: pointer;

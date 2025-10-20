@@ -1,102 +1,65 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Philo-Map</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Philo-Map (test)</title>
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #2E6B2E;
-    }
-    h1 {
-      text-align: center;
-      padding: 20px;
-      color: white;
-    }
+    body { margin: 0; font-family: Arial, sans-serif; background: #2E6B2E; }
+    h1 { text-align:center; padding:20px; color:#fff; }
+
     /* Grille flexible (auto) */
     .map {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      grid-gap: 10px;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      grid-gap: 12px;
       padding: 20px;
       max-width: 1000px;
       margin: auto;
+      /* position relative au cas où on voudrait position absolute des marqueurs */
+      position: relative;
     }
+
     .spot {
       cursor: pointer;
       border-radius: 10px;
       overflow: hidden;
       transition: transform 0.2s;
       background: white;
-      padding: 5px;
+      padding: 8px;
       text-align: center;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.15);
     }
-    .spot:hover { transform: scale(1.05); }
-    .spot img {
-      width: 100%;
-      height: 80px;
-      object-fit: contain;
-      display: block;
-      margin: auto;
-    }
-    .spot-title {
-      font-size: 12px;
-      margin-top: 5px;
-      color: #333;
-    }
-    /* Fenêtre modale */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      padding-top: 100px;
-      left: 0; top: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6);
-    }
-    .modal-content {
-      background: #fff;
-      margin: auto;
-      padding: 20px;
-      border-radius: 10px;
-      width: 80%; max-width: 600px;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-    .close {
-      color: #aaa;
-      float: right;
-      font-size: 24px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .close:hover { color: #000; }
+    .spot:hover { transform: scale(1.03); }
+    .spot img { width: 100%; height: 80px; object-fit: contain; display:block; margin:auto; }
+    .spot-title { font-size: 13px; margin-top:6px; color:#333; }
 
-    #modal-title {
-      font-size: 20px;
-      margin-top: 0;
+    /* classe pour marqueurs absolus (si utilisés) */
+    .spot-marker {
+      cursor: pointer;
+      position: absolute;
+      transition: transform .12s ease;
     }
-    #modal-text {
-      font-size: 14px;
-      line-height: 1.5;
-      white-space: pre-wrap;
+    .spot-marker:hover { transform: translateY(-4px); }
+
+    /* Modal */
+    .modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,.6); }
+    .modal-content {
+      background:#fff; margin:80px auto; padding:20px; border-radius:10px;
+      width:90%; max-width:680px; max-height:80vh; overflow-y:auto;
     }
-    #modal-image {
-      max-width: 100%;
-      height: auto;
-      margin-bottom: 15px;
-      display: block;
-      border-radius: 8px;
-    }
+    .close { color:#aaa; float:right; font-size:24px; font-weight:bold; cursor:pointer; }
+    .close:hover { color:#000; }
+
+    #modal-image { max-width:100%; height:auto; display:block; margin-bottom:12px; border-radius:8px; }
+    #modal-title { margin:0 0 8px 0; font-size:20px; }
+    #modal-text { white-space: pre-wrap; line-height:1.4; color:#222; }
   </style>
 </head>
 <body>
-  <h1>Philo-Map</h1>
+  <h1>Philo-Map — Test</h1>
   <div class="map" id="map"></div>
 
-  <!-- Modale -->
   <div id="modal" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
@@ -107,9 +70,9 @@
   </div>
 
   <script>
-    // ----------------------
-    // 🔧 PERSONNALISATION :
-    // ----------------------
+  document.addEventListener("DOMContentLoaded", () => {
+    // Exemple de données (remplace/complète par tes vrais chemins)
+    // Pour tester le marqueur absolu, décommente x et y sur un objet
     const spotsData = [
       {
         title: "Bonheur",
@@ -232,67 +195,74 @@
       }
     ];
 
-  // --- IMPORTANT : récupère le container (défini dans ton HTML : <div class="map" id="map"></div>) ---
-  const mapContainer = document.getElementById("map");
-
-  // Si tu veux permettre des marqueurs absolus, assure-toi que le conteneur est relatif
-  // (ajoute ceci dans ton CSS si tu comptes utiliser x/y)
-  // .map { position: relative; }
-  mapContainer.style.position = mapContainer.style.position || "relative";
-
-  spotsData.forEach((spot, index) => {
-    const size = spot.size || 80;
-
-    // Si spot.x && spot.y sont définis → crée un marqueur absolu
-    if (typeof spot.x === "number" && typeof spot.y === "number") {
-      const img = document.createElement("img");
-      img.src = spot.thumb;
-      img.alt = spot.title;
-      img.style.position = "absolute";
-      img.style.left = spot.x + "px";
-      img.style.top = spot.y + "px";
-      img.style.width = size + "px";
-      img.style.height = size + "px";
-      // recentrer le point (ancre au centre)
-      img.style.marginLeft = -(size / 2) + "px";
-      img.style.marginTop = -(size / 2) + "px";
-      img.classList.add("spot-marker"); // utile si tu veux styliser les marqueurs
-      img.addEventListener("click", () => openModal(spot));
-      mapContainer.appendChild(img);
+    // Récupération du container
+    const mapContainer = document.getElementById("map");
+    if (!mapContainer) {
+      console.error("Container #map introuvable !");
       return;
     }
+    // assure la position relative (utile pour les marqueurs absolus)
+    mapContainer.style.position = mapContainer.style.position || "relative";
 
-    // Sinon → miniature pour la grille
-    const div = document.createElement("div");
-    div.classList.add("spot");
-    div.innerHTML = `
-      <img src="${spot.thumb}" alt="Miniature ${index+1}" 
-           style="width:${size}px; height:${size}px; object-fit:contain; display:block; margin:0 auto;">
-      <div class="spot-title">${spot.title}</div>
-    `;
-    div.addEventListener("click", () => openModal(spot));
-    mapContainer.appendChild(div);
+    // création des éléments
+    spotsData.forEach((spot, index) => {
+      const size = spot.size || 80;
+
+      // Si spot.x/y sont fournis -> marqueur absolu (positionné sur la carte)
+      if (typeof spot.x === "number" && typeof spot.y === "number") {
+        const img = document.createElement("img");
+        img.src = spot.thumb;
+        img.alt = spot.title;
+        img.classList.add("spot-marker");
+        img.style.left = spot.x + "px";
+        img.style.top = spot.y + "px";
+        img.style.width = size + "px";
+        img.style.height = size + "px";
+        // recentrer par rapport au centre de l'image
+        img.style.marginLeft = -(size/2) + "px";
+        img.style.marginTop = -(size/2) + "px";
+        img.addEventListener("click", () => openModal(spot));
+        mapContainer.appendChild(img);
+        console.log("Ajout marqueur absolu:", spot.title, "x,y=", spot.x, spot.y);
+        return;
+      }
+
+      // Sinon -> miniature en grille
+      const div = document.createElement("div");
+      div.classList.add("spot");
+      // l'image interne a un style inline respectant la taille demandée
+      div.innerHTML = `
+        <img src="${spot.thumb}" alt="${spot.title}" style="width:${size}px; height:${size}px; object-fit:contain; display:block; margin:0 auto;">
+        <div class="spot-title">${spot.title}</div>
+      `;
+      div.addEventListener("click", () => openModal(spot));
+      mapContainer.appendChild(div);
+      console.log("Ajout miniature grille:", spot.title, "size=", size);
+    });
+
+    // Modal
+    const modal = document.getElementById("modal");
+    const modalTitle = document.getElementById("modal-title");
+    const modalText = document.getElementById("modal-text");
+    const modalImage = document.getElementById("modal-image");
+    const closeBtn = document.querySelector(".close");
+
+    function openModal(spot) {
+      modalTitle.textContent = spot.title;
+      modalText.textContent = spot.text || "";
+      modalImage.src = spot.image || spot.thumb || "";
+      modalImage.alt = spot.title || "";
+      modal.style.display = "block";
+    }
+
+    closeBtn.addEventListener("click", () => { modal.style.display = "none"; });
+    window.addEventListener("click", (ev) => {
+      if (ev.target === modal) modal.style.display = "none";
+    });
+
+    // debug rapide
+    console.log("spotsData length:", spotsData.length);
   });
-
-  // --- Modale (ton code existant) ---
-  const modal = document.getElementById("modal");
-  const modalTitle = document.getElementById("modal-title");
-  const modalText = document.getElementById("modal-text");
-  const modalImage = document.getElementById("modal-image");
-  const closeBtn = document.querySelector(".close");
-
-  function openModal(spot) {
-    modalTitle.textContent = spot.title;
-    modalText.textContent = spot.text;
-    modalImage.src = spot.image;
-    modalImage.alt = spot.title;
-    modal.style.display = "block";
-  }
-
-  closeBtn.onclick = () => { modal.style.display = "none"; }
-  window.onclick = (event) => {
-    if (event.target === modal) modal.style.display = "none";
-  }
-</script>
+  </script>
 </body>
 </html>

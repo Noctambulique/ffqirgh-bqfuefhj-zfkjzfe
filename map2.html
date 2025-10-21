@@ -212,7 +212,7 @@
     mapContainer.style.position = mapContainer.style.position || "relative";
 
     spotsData.forEach((spot, index) => {
-      const size = spot.size || 80;
+      const size = spot.size || 120;
 
       // Si spot.x/y sont fournis -> marqueur absolu (positionné sur la carte)
       if (typeof spot.x === "number" && typeof spot.y === "number") {
